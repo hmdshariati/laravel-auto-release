@@ -45,61 +45,52 @@ class VSCManagerTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
-	public function can_determine_case_when_composer_need_update_and_when_not_in_and_commit_can_contains_composer_updated()
+	public function can_find_commit_by_substring_if_passed_string_as_argument()
 	{
-		$this->assertNeedUpdate('(composer updated)', 'needUpdateComposer');
-		$this->assertHasBeenUpdated('(composer updated)', 'needUpdateComposer');
-		$this->assertNotNeedUpdate('needUpdateComposer');
+		$this->assertNeedUpdate('(composer updated)', '(composer updated)');
 	}
 
 	/**
 	 * @test
 	 */
-	public function can_determine_case_when_composer_need_update_and_when_not_in_and_commit_can_contains_composer_update()
+	public function can_find_commit_by_substring_if_passed_array_as_argument_for_first_array_element()
 	{
-		$this->assertNeedUpdate('(composer update)', 'needUpdateComposer');
-		$this->assertHasBeenUpdated('(composer update)', 'needUpdateComposer');
+		$this->assertNeedUpdate('(composer update)', ['(composer update)', '(composer updated)']);
 	}
 
 	/**
 	 * @test
 	 */
-	public function can_determine_case_when_npm_need_update_and_when_not_in_and_commit_can_contains_npm_updated()
+	public function can_find_commit_by_substring_if_passed_array_as_argument_for_last_array_element()
 	{
-		$this->assertNeedUpdate('(npm updated)', 'needUpdateNpm');
-		$this->assertHasBeenUpdated('(npm updated)', 'needUpdateNpm');
-		$this->assertNotNeedUpdate('needUpdateNpm');
+		$this->assertNeedUpdate('(composer updated)', ['(composer update)', '(composer updated)']);
 	}
 
 	/**
 	 * @test
 	 */
-	public function can_determine_case_when_npm_need_update_and_when_not_in_and_commit_can_contains_npm_update()
+	public function return_false_if_commits_contain_similar_but_not_same_substring()
 	{
-		$this->assertNeedUpdate('(npm update)', 'needUpdateNpm');
-		$this->assertHasBeenUpdated('(npm update)', 'needUpdateNpm');
+		$this->assertNeedUpdate('(composer updated)', ['(composer update)'], false);
 	}
 
 	/**
 	 * @test
 	 */
-	public function can_determine_case_when_npm_need_install_and_when_not_in_and_commit_can_contains_npm_installed()
+	public function return_false_if_commits_contain_substring_but_needed_commit_is_same_with_last_commit()
 	{
-		$this->assertNeedUpdate('(npm installed)', 'needInstallNpm');
-		$this->assertHasBeenUpdated('(npm installed)', 'needInstallNpm');
-		$this->assertNotNeedUpdate('needUpdateNpm');
+		$this->assertHasBeenUpdated('(composer update)', ['(composer update)', '(composer updated)']);
 	}
 
 	/**
 	 * @test
 	 */
-	public function can_determine_case_when_npm_need_install_and_when_not_in_and_commit_can_contains_npm_install()
+	public function return_false_if_commits_not_contain_needed_substring()
 	{
-		$this->assertNeedUpdate('(npm install)', 'needInstallNpm');
-		$this->assertHasBeenUpdated('(npm install)', 'needInstallNpm');
+		$this->assertNotNeedUpdate(['(composer update)', '(composer updated)']);
 	}
 
-	protected function assertNeedUpdate($search, $method)
+	protected function assertNeedUpdate($commitSubString, $needles, $expected = true)
 	{
 		$this->gitMock->shouldReceive('log')->once()->andReturn($this->convertArrayToCollectionOfObjects([
 			'68e9c7e4fa4465aa40db723d0a96dcda842e8532' => [
@@ -114,7 +105,7 @@ class VSCManagerTest extends \PHPUnit_Framework_TestCase
 			],
 			'a6b9472d98f135008279ad9ce32f77a7793d8325' => [
 				'hash'    => 'a6b9472d98f135008279ad9ce32f77a7793d8325',
-				'message' => 'Fixed catalog items teaser section styles.' . $search,
+				'message' => 'Fixed catalog items teaser section styles.' . $commitSubString,
 			],
 			'68e9c7e4fa4465aa40db723d0a96dcda842e8532' => [
 				'hash'    => '68e9c7e4fa4465aa40db723d0a96dcda842e8532',
@@ -130,10 +121,10 @@ class VSCManagerTest extends \PHPUnit_Framework_TestCase
 
 		$manager->setLastCommitHash();
 
-		$this->assertTrue($manager->$method());
+		$this->assertSame($expected, $manager->findBy($needles));
 	}
 
-	protected function assertHasBeenUpdated($search, $method)
+	protected function assertHasBeenUpdated($commitSubString, $needles)
 	{
 		$this->gitMock->shouldReceive('log')->once()->andReturn($this->convertArrayToCollectionOfObjects([
 			'68e9c7e4fa4465aa40db723d0a96dcda842e8532' => [
@@ -152,7 +143,7 @@ class VSCManagerTest extends \PHPUnit_Framework_TestCase
 			],
 			'68e9c7e4fa4465aa40db723d0a96dcda842e8532' => [
 				'hash'    => '68e9c7e4fa4465aa40db723d0a96dcda842e8532',
-				'message' => 'Added favicon. ' . $search . '. And added new tags to black list',
+				'message' => 'Added favicon. ' . $commitSubString . '. And added new tags to black list',
 			],
 			'7bf4079224bbd4b328e9aaef2fec9cf5505e886f' => [
 				'hash'    => '7bf4079224bbd4b328e9aaef2fec9cf5505e886f',
@@ -164,10 +155,10 @@ class VSCManagerTest extends \PHPUnit_Framework_TestCase
 
 		$manager->setLastCommitHash();
 
-		$this->assertFalse($manager->$method());
+		$this->assertFalse($manager->findBy($needles));
 	}
 
-	protected function assertNotNeedUpdate($method)
+	protected function assertNotNeedUpdate($needles)
 	{
 		$this->gitMock->shouldReceive('log')->once()->andReturn($this->convertArrayToCollectionOfObjects([
 			'68e9c7e4fa4465aa40db723d0a96dcda842e8532' => [
@@ -198,6 +189,6 @@ class VSCManagerTest extends \PHPUnit_Framework_TestCase
 
 		$manager->setLastCommitHash();
 
-		$this->assertFalse($manager->$method());
+		$this->assertFalse($manager->findBy($needles));
 	}
 }

@@ -12,13 +12,19 @@ class ReleaseManagerTest extends \PHPUnit_Framework_TestCase
 	protected $shellMock;
 
 	/**
+	 * @var \Mockery\MockInterface
+	 */
+	protected $vscManagerMock;
+
+	/**
 	 * @return void
 	 */
 	public function setUp()
 	{
 		parent::setUp();
 
-		$this->shellMock = \Mockery::mock('\AndrewLrrr\LaravelProjectBuilder\Utils\Shell');
+		$this->shellMock      = \Mockery::mock('\AndrewLrrr\LaravelProjectBuilder\Utils\Shell');
+		$this->vscManagerMock = \Mockery::mock('\AndrewLrrr\LaravelProjectBuilder\VSCManager');
 	}
 
 	/**
@@ -26,7 +32,7 @@ class ReleaseManagerTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function can_register_new_methods()
 	{
-		$manager = new ReleaseManager($this->shellMock);
+		$manager = new ReleaseManager($this->shellMock, $this->vscManagerMock);
 
 		$manager->register('action1', function () {
 			return null;
@@ -44,7 +50,7 @@ class ReleaseManagerTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function can_insert_new_methods_after()
 	{
-		$manager = new ReleaseManager($this->shellMock);
+		$manager = new ReleaseManager($this->shellMock, $this->vscManagerMock);
 
 		$manager->register('action1', function () {
 			return null;
@@ -82,7 +88,7 @@ class ReleaseManagerTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function can_insert_new_methods_before()
 	{
-		$manager = new ReleaseManager($this->shellMock);
+		$manager = new ReleaseManager($this->shellMock, $this->vscManagerMock);
 
 		$manager->register('action1', function () {
 			return null;
@@ -120,7 +126,7 @@ class ReleaseManagerTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function can_register_new_methods_and_invoke_them()
 	{
-		$manager = new ReleaseManager($this->shellMock);
+		$manager = new ReleaseManager($this->shellMock, $this->vscManagerMock);
 
 		$manager->register('action1', function () {
 			return 'test1';
@@ -140,7 +146,7 @@ class ReleaseManagerTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function can_register_new_methods_and_invoke_them_with_parameters()
 	{
-		$manager = new ReleaseManager($this->shellMock);
+		$manager = new ReleaseManager($this->shellMock, $this->vscManagerMock);
 
 		$manager->register('action1', function ($one, $two) {
 			return 'param1 - ' . $one  . ' param2 - ' . $two;
@@ -167,7 +173,7 @@ class ReleaseManagerTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function can_register_new_methods_with_messages_and_invoke_them()
 	{
-		$manager = new ReleaseManager($this->shellMock);
+		$manager = new ReleaseManager($this->shellMock, $this->vscManagerMock);
 
 		$manager->register('action1', function () {
 			return 'test1';
@@ -198,7 +204,7 @@ class ReleaseManagerTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function can_register_new_methods_and_after_delete_them()
 	{
-		$manager = new ReleaseManager($this->shellMock);
+		$manager = new ReleaseManager($this->shellMock, $this->vscManagerMock);
 
 		$manager->register('action1', function () {
 			return null;
@@ -228,7 +234,7 @@ class ReleaseManagerTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function can_register_new_methods_with_messages_and_after_delete_them()
 	{
-		$manager = new ReleaseManager($this->shellMock);
+		$manager = new ReleaseManager($this->shellMock, $this->vscManagerMock);
 
 		$manager->register('action1', function () {
 			return null;
@@ -266,7 +272,7 @@ class ReleaseManagerTest extends \PHPUnit_Framework_TestCase
 
 		$this->shellMock->shouldReceive('execCommand')->once()->andReturn($expected2);
 
-		$manager = new ReleaseManager($this->shellMock);
+		$manager = new ReleaseManager($this->shellMock, $this->vscManagerMock);
 
 		$manager->register('action1', function () {
 			return $this->shell->execCommand('ls -l');
@@ -288,7 +294,7 @@ class ReleaseManagerTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function throws_exception_if_action_name_is_empty()
 	{
-		$manager = new ReleaseManager($this->shellMock);
+		$manager = new ReleaseManager($this->shellMock, $this->vscManagerMock);
 
 		$manager->register('', function () {
 			return null;
@@ -302,7 +308,7 @@ class ReleaseManagerTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function throws_exception_if_action_already_exists()
 	{
-		$manager = new ReleaseManager($this->shellMock);
+		$manager = new ReleaseManager($this->shellMock, $this->vscManagerMock);
 
 		$manager->register('action', function () {
 			return null;

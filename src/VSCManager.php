@@ -45,45 +45,74 @@ class VSCManager
 	}
 
 	/**
-	 * @return bool
+	 * @return string
 	 */
-	public function needUpdateComposer()
+	public function clean()
 	{
-		return ($this->compareCommits('(composer updated)') || $this->compareCommits('(composer update)'));
+		return $this->git->clean();
 	}
 
 	/**
-	 * @return bool
+	 * @param string $branch
+	 *
+	 * @return string
 	 */
-	public function needUpdateNpm()
+	public function checkout($branch = 'master')
 	{
-		return ($this->compareCommits('(npm updated)') || $this->compareCommits('(npm update)'));
+		return $this->git->checkout($branch);
 	}
 
 	/**
-	 * @return bool
+	 * @param string $remote
+	 * @param string $branch
+	 *
+	 * @return string
 	 */
-	public function needInstallNpm()
+	public function pull($remote = 'origin', $branch = 'master')
 	{
-		return ($this->compareCommits('(npm installed)') || $this->compareCommits('(npm install)'));
+		return $this->git->pull($remote, $branch);
 	}
 
 	/**
-	 * @param string $message
+	 * @return string
+	 */
+	public function reset()
+	{
+		return $this->git->reset();
+	}
+
+	/**
+	 * @param mixed $needles
 	 *
 	 * @return bool
 	 */
-	protected function compareCommits($message)
+	public function findBy($needles)
+	{
+		if (! is_array($needles)) {
+			$needles = [(string) $needles];
+		}
+
+		return $this->compareCommits($needles);
+	}
+
+	/**
+	 * @param array $needles
+	 *
+	 * @return bool
+	 */
+	protected function compareCommits(array $needles)
 	{
 		$commits = $this->git->log(self::COMMITS_HISTORY_DEPTH, ['message']);
 
-		foreach ($commits as $commit) {
-			if ($commit->hash === $this->lastCommitHash) {
-				return false;
-			}
+		foreach ($needles as $needle) {
+			foreach ($commits as $commit) {
+				if ($commit->hash === $this->lastCommitHash) {
+					break;
+				}
 
-			if (str_contains(strtolower($commit->message), $message)) {
-				return true;
+				if (str_contains(strtolower($commit->message), $needle)) {
+					return true;
+				}
 			}
 		}
 

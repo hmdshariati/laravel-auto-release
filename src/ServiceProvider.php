@@ -1,6 +1,5 @@
 <?php namespace AndrewLrrr\LaravelProjectBuilder;
 
-use AndrewLrrr\LaravelProjectBuilder\Commands\ClearCommand;
 use AndrewLrrr\LaravelProjectBuilder\Commands\ProjectRelease;
 use AndrewLrrr\LaravelProjectBuilder\Utils\Git;
 use AndrewLrrr\LaravelProjectBuilder\Utils\Shell;
@@ -27,47 +26,47 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 			$shell          = new Shell($basePath);
 			$git            = new Git($shell);
 			$vscManager     = new VSCManager($git);
-			$releaseManager = new ReleaseManager($shell);
+			$releaseManager = new ReleaseManager($shell, $vscManager);
 
 			$releaseManager->register('down', function () {
 				Artisan::call('down');
 			}, 'Put the application into maintenance mode');
 
-			$releaseManager->register('git_clean', function () use ($git) {
-				return $git->clean();
+			$releaseManager->register('git_clean', function () {
+				return $this->vscManager->clean();
 			}, 'Removing untracked files');
 
-			$releaseManager->register('git_reset', function () use ($git) {
-				return $git->reset();
+			$releaseManager->register('git_reset', function () {
+				return $this->vscManager->reset();
 			}, 'Resetting git local changes');
 
-			$releaseManager->register('git_checkout', function () use ($git) {
-				return $git->checkout();
+			$releaseManager->register('git_checkout', function () {
+				return $this->vscManager->checkout();
 			}, 'Check outing to git master branch');
 
-			$releaseManager->register('git_pull', function () use ($git) {
-				return $git->pull();
+			$releaseManager->register('git_pull', function () {
+				return $this->vscManager->pull();
 			}, 'Pulling latest changes');
 
 			$releaseManager->register('migrations', function () {
 				Artisan::call('migrate', ['--force' => true]);
 			}, 'Running migrations');
 
-			$releaseManager->register('composer_update', function ($force) use ($vscManager) {
-				if ($force || $vscManager->needUpdateComposer()) {
+			$releaseManager->register('composer_update', function ($force) {
+				if ($force || $this->vscManager->findBy(['(composer updated)', '(composer update)'])) {
 					return $this->shell->execCommand('composer update');
 				}
 			}, 'Defining if composer needs to be updated...');
 
-			$releaseManager->register('npm_install', function ($force) use ($vscManager) {
-				if ($force || $vscManager->needInstallNpm()) {
-					return $this->shell->execCommand('npm update');
+			$releaseManager->register('npm_install', function ($force) {
+				if ($force || $this->vscManager->findBy(['(npm installed)', '(npm install)'])) {
+					return $this->shell->execCommand('npm install');
 				}
 			}, 'Defining if npm needs to be installed...');
 
-			$releaseManager->register('npm_update', function ($force) use ($vscManager) {
-				if ($force || $vscManager->needUpdateNpm()) {
-					return $this->shell->execCommand('npm install');
+			$releaseManager->register('npm_update', function ($force) {
+				if ($force || $this->vscManager->findBy(['(npm updated)', '(npm update)'])) {
+					return $this->shell->execCommand('npm update');
 				}
 			}, 'Defining if npm needs to be updated...');
 

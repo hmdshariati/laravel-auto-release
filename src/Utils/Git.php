@@ -78,7 +78,7 @@ class Git
 	 * @param string $remote
 	 * @param string $branch
 	 *
-	 * @return array|string
+	 * @return string
 	 */
 	public function pull($remote = 'origin', $branch = 'master')
 	{

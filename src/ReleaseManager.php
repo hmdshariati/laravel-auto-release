@@ -15,6 +15,11 @@ class ReleaseManager
 	protected $shell;
 
 	/**
+	 * @var VSCManager
+	 */
+	protected $vscManager;
+
+	/**
 	 * @var string|null
 	 */
 	protected $after = null;
@@ -43,10 +48,12 @@ class ReleaseManager
 	 * BuildManager constructor.
 	 *
 	 * @param Shell $shell
+	 * @param VSCManager $vscManager
 	 */
-	public function __construct(Shell $shell)
+	public function __construct(Shell $shell, VSCManager $vscManager)
 	{
-		$this->shell = $shell;
+		$this->shell      = $shell;
+		$this->vscManager = $vscManager;
 	}
 
 	/**
