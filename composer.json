@@ -1,0 +1,31 @@
+{
+	"name": "andrewlrrr/laravel-project-builder",
+	"description": "This is console command which helps developers to build and support the project up to date, synchronize updates composer and npm, collect frontend etc.",
+	"keywords": ["laravel", "artisan", "console", "build", "composer", "npm", "laravel-elixir", "laravel-mix", "git"],
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Andrew Larin",
+			"email": "larin.projects@gmail.com"
+		}
+	],
+	"require": {
+		"php": ">=5.4.0",
+		"illuminate/support": "^5.0,<5.5",
+		"illuminate/console": "^5.0,<5.5"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "~4.8",
+		"mockery/mockery": "^0.9.9"
+	},
+	"autoload": {
+		"psr-4": {
+			"AndrewLrrr\\LaravelProjectBuilder\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Tests\\": "tests/"
+		}
+	}
+}
