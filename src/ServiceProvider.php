@@ -1,9 +1,8 @@
 <?php namespace AndrewLrrr\LaravelProjectBuilder;
 
-use AndrewLrrr\LaravelProjectBuilder\Commands\ProjectRelease;
+use AndrewLrrr\LaravelProjectBuilder\Commands\BuildCommand;
 use AndrewLrrr\LaravelProjectBuilder\Utils\Git;
 use AndrewLrrr\LaravelProjectBuilder\Utils\Shell;
-use Illuminate\Support\Facades\Artisan;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 class ServiceProvider extends \Illuminate\Support\ServiceProvider
@@ -13,7 +12,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 	 *
 	 * @var bool
 	 */
-	protected $defer = false;
+	protected $defer = true;
 
 	/**
 	 * Register the service provider.
@@ -22,6 +21,9 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 	 */
 	public function register()
 	{
+		$configPath = __DIR__ . '/../config/builder.php';
+		$this->mergeConfigFrom($configPath, 'builder');
+
 		$this->app->singleton('project.builder', function ($app) {
 			$basePath       = function_exists('base_path') ? base_path() : __DIR__ . '/../';
 			$shell          = new Shell(new BufferedOutput(), $basePath);
@@ -30,7 +32,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 			$releaseManager = new ReleaseManager($shell, $vscManager);
 
 			$releaseManager->register('down', function () {
-				return $this->shell->execArtisan('down');
+				return $this->shell->execArtisan('down')->toString();
 			}, 'Putting the application into maintenance mode...');
 
 			$releaseManager->register('set_last_commit_hash', function () {
@@ -54,70 +56,42 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 			}, 'Pulling latest changes...');
 
 			$releaseManager->register('migrations', function () {
-				Artisan::call('migrate', ['--force' => true]);
+				return $this->shell->execArtisan('migrate', ['--force' => true])->toString();
 			}, 'Running migrations...');
 
 			$releaseManager->register('composer_update', function () {
 				$force = (bool) $this->option('cu');
 				if ($force || $this->vscManager->findBy(['(composer updated)', '(composer update)'])) {
-					return $this->shell->execCommand('composer update');
+					return $this->shell->execCommand('composer update')->toString();
 				}
 			}, 'Defining if composer needs to be updated...');
 
-			$releaseManager->register('npm_install', function () {
-				$force = (bool) $this->option('ni');
-				if ($force || $this->vscManager->findBy(['(npm installed)', '(npm install)'])) {
-					return $this->shell->execCommand('npm install');
-				}
-			}, 'Defining if npm needs to be installed...');
-
-			$releaseManager->register('npm_update', function () {
-				$force = (bool) $this->option('nu');
-				if ($force || $this->vscManager->findBy(['(npm updated)', '(npm update)'])) {
-					return $this->shell->execCommand('npm update');
-				}
-			}, 'Defining if npm needs to be updated...');
-
-			$releaseManager->register('optimize', function () {
-				if (function_exists('app') && app()->environment('production')) {
-					return $this->shell->execArtisan('optimize');
-				}
-			}, 'Optimizing the framework for better performance...');
-
-			$releaseManager->register('config_cache', function () {
-				if (function_exists('app') && app()->environment('production')) {
-					return $this->shell->execArtisan('config:cache');
-				}
-			}, 'Creating a cache file for faster configuration loading...');
-
-			$releaseManager->register('route_cache', function () {
-				if (function_exists('app') && app()->environment('production')) {
-					return $this->shell->execArtisan('route:cache');
-				}
-			}, 'Creating a route cache file for faster route registration...');
-
-			$releaseManager->register('laravel-mix', function () {
-				if (function_exists('app')) {
-					return $this->shell->execCommand('npm run ' . (app()->environment('production') ? 'production' : 'dev'));
-				}
-			}, 'Building frontend with Laravel Mix...');
-
-			$releaseManager->register('dump-autoload', function () {
-				return $this->shell->execCommand('composer dump-autoload');
-			}, 'Performing composer dump-autoload...');
-
 			$releaseManager->register('up', function () {
-				return $this->shell->execArtisan('up');
-			}, 'Bringing the application out of maintenance mode...');
+				return $this->shell->execArtisan('up')->toString();
+			}, 'Bringing the application out of maintenance mode!');
+
+			return $releaseManager;
 		});
 
 		$this->app->alias('project.builder', 'AndrewLrrr\LaravelProjectBuilder\ReleaseManager');
 
 		$this->app->singleton('command.project.builder', function ($app) {
-			return new ProjectRelease($app['project.builder']);
+			return new BuildCommand($app['project.builder']);
 		});
 
 		$this->commands(['command.project.builder']);
+	}
+
+	/**
+	 * Perform post-registration booting of services.
+	 *
+	 * @return void
+	 */
+	public function boot()
+	{
+		$this->publishes([
+			__DIR__.'/../config/builder.php' => config_path('builder.php')
+		], 'config');
 	}
 
 	/**
