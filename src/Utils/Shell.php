@@ -74,7 +74,7 @@ class Shell
 	 */
 	public function toString()
 	{
-		return implode("\n", $this->out);
+		return rtrim(implode("\n", $this->out), "\n") . "\n";
 	}
 
 	/**

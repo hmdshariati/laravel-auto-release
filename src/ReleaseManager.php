@@ -149,7 +149,7 @@ class ReleaseManager
 		}
 
 		if (empty($name)) {
-			throw new ReleaseManagerException('Action can\'t be empty');
+			throw new ReleaseManagerException("Action can't be empty");
 		}
 
 		if (! empty($message)) {

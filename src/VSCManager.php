@@ -2,11 +2,12 @@
 
 namespace AndrewLrrr\LaravelProjectBuilder;
 
+use AndrewLrrr\LaravelProjectBuilder\Traits\ConfigHelper;
 use AndrewLrrr\LaravelProjectBuilder\Utils\Git;
 
 class VSCManager
 {
-	const COMMITS_HISTORY_DEPTH = 10;
+	use ConfigHelper;
 
 	/**
 	 * @var Git
@@ -49,28 +50,28 @@ class VSCManager
 	 */
 	public function clean()
 	{
-		return $this->git->clean();
+		return $this->git->clean()->toString();
 	}
 
 	/**
-	 * @param string $branch
-	 *
 	 * @return string
 	 */
-	public function checkout($branch = 'master')
+	public function checkout()
 	{
-		return $this->git->checkout($branch);
+		return $this->git->checkout(
+			$this->findConfigOrDefault('builder.vsc.branch', 'master')
+		)->toString();
 	}
 
 	/**
-	 * @param string $remote
-	 * @param string $branch
-	 *
 	 * @return string
 	 */
-	public function pull($remote = 'origin', $branch = 'master')
+	public function pull()
 	{
-		return $this->git->pull($remote, $branch);
+		return $this->git->pull(
+			$this->findConfigOrDefault('builder.vsc.branch', 'master'),
+			$this->findConfigOrDefault('builder.vsc.remote', 'origin')
+		)->toString();
 	}
 
 	/**
@@ -78,7 +79,7 @@ class VSCManager
 	 */
 	public function reset()
 	{
-		return $this->git->reset();
+		return $this->git->reset()->toString();
 	}
 
 	/**
@@ -102,7 +103,10 @@ class VSCManager
 	 */
 	protected function compareCommits(array $needles)
 	{
-		$commits = $this->git->log(self::COMMITS_HISTORY_DEPTH, ['message']);
+		$commits = $this->git->log(
+			$this->findConfigOrDefault('builder.vsc.log_depth', 10),
+			['message']
+		);
 
 		foreach ($needles as $needle) {
 			foreach ($commits as $commit) {

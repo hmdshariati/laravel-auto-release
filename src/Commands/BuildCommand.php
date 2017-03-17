@@ -5,25 +5,12 @@ namespace AndrewLrrr\LaravelProjectBuilder\Commands;
 use AndrewLrrr\LaravelProjectBuilder\Exceptions\ShellException;
 use AndrewLrrr\LaravelProjectBuilder\ReleaseManager;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Config;
 
-class ProjectRelease extends Command
+class BuildCommand extends Command
 {
 	/**
-	 * The name and signature of the console command.
-	 *
-	 * @var string
-	 */
-	protected $signature = 'project:build {--cu} {--nu} {--ni}';
-
-	/**
-	 * The console command description.
-	 *
-	 * @var string
-	 */
-	protected $description = 'Build release project';
-
-	/**
-	 * @var ProjectRelease
+	 * @var ReleaseManager
 	 */
 	protected $releaseManager;
 
@@ -34,6 +21,8 @@ class ProjectRelease extends Command
 	 */
 	public function __construct(ReleaseManager $releaseManager)
 	{
+		$this->signature   = Config::get('builder.command.signature');
+		$this->description = Config::get('builder.command.description');
 		parent::__construct();
 		$this->releaseManager = $releaseManager;
 	}

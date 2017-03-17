@@ -55,7 +55,7 @@ class ShellTest extends \PHPUnit_Framework_TestCase
 	{
 		Artisan::shouldReceive('call')->once()->andReturn(1);
 
-		$this->bufferMock->shouldReceive('fetch')->andReturn("Some artisan command output\n");
+		$this->bufferMock->shouldReceive('fetch')->once()->andReturn("Some artisan command output\n");
 
 		$expected = "Some artisan command output\n";
 
@@ -68,10 +68,38 @@ class ShellTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals($expected, $this->shell->execArtisan($command));
 	}
 
+
 	/**
 	 * @test
 	 */
-	public function has_correct_output_after_multiple_invokes()
+	public function can_correctly_add_newline_to_string_output()
+	{
+		$expected = "Some command output\n";
+
+		Artisan::shouldReceive('call')->once()->andReturn(1);
+
+		$this->bufferMock->shouldReceive('fetch')->once()->andReturn("Some command output");
+
+		$command = 'artisan:command';
+
+		$this->assertSame($expected, $this->shell->execArtisan($command)->toString());
+		$this->assertEquals($expected, $this->shell->execArtisan($command));
+
+		$this->bufferMock->shouldReceive('fetch')->once()->andReturn("Some command output\n");
+
+		$this->assertSame($expected, $this->shell->execArtisan($command)->toString());
+		$this->assertEquals($expected, $this->shell->execArtisan($command));
+
+		$this->bufferMock->shouldReceive('fetch')->once()->andReturn("Some command output\n\n\n");
+
+		$this->assertSame($expected, $this->shell->execArtisan($command)->toString());
+		$this->assertEquals($expected, $this->shell->execArtisan($command));
+	}
+
+	/**
+	 * @test
+	 */
+	public function has_correctly_output_after_multiple_invokes()
 	{
 		$expected = [
 			'file1.txt',
@@ -125,7 +153,7 @@ class ShellTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function can_execute_command_and_returns_string()
 	{
-		$expected = "file1.txt\nfile2.txt\nfile3.txt";
+		$expected = "file1.txt\nfile2.txt\nfile3.txt\n";
 
 		$command = 'find -type f -printf "%f\n"';
 

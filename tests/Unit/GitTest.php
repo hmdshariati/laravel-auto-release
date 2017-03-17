@@ -86,7 +86,7 @@ class GitTest extends \PHPUnit_Framework_TestCase
 			$actualCommand = $command;
 		});
 
-		$this->git->pull('custom_remote', 'custom_branch');
+		$this->git->pull('custom_branch', 'custom_remote');
 
 		$this->assertSame($expectedCommand, $actualCommand);
 	}

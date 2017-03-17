@@ -15,6 +15,11 @@ class VSCManagerTest extends \PHPUnit_Framework_TestCase
 	protected $gitMock;
 
 	/**
+	 * @var \Mockery\MockInterface
+	 */
+	protected $vscManager;
+
+	/**
 	 * @return void
 	 */
 	public function setUp()
@@ -22,6 +27,11 @@ class VSCManagerTest extends \PHPUnit_Framework_TestCase
 		parent::setUp();
 
 		$this->gitMock = \Mockery::mock('\AndrewLrrr\LaravelProjectBuilder\Utils\Git');
+		$this->vscManager = \Mockery::mock('\AndrewLrrr\LaravelProjectBuilder\VSCManager', [$this->gitMock])
+			->shouldAllowMockingProtectedMethods()
+			->makePartial();
+
+		$this->vscManager->shouldReceive('findConfigOrDefault')->andReturnNull();
 	}
 
 	/**
@@ -35,11 +45,9 @@ class VSCManagerTest extends \PHPUnit_Framework_TestCase
 			]
 		]));
 
-		$manager = new VSCManager($this->gitMock);
+		$this->vscManager->setLastCommitHash();
 
-		$manager->setLastCommitHash();
-
-		$this->assertSame('cd4415946fe4b67c6cccc303e4091fb39c30ff5a', $manager->getLastCommitHash());
+		$this->assertSame('cd4415946fe4b67c6cccc303e4091fb39c30ff5a', $this->vscManager->getLastCommitHash());
 	}
 
 	/**
@@ -117,11 +125,9 @@ class VSCManagerTest extends \PHPUnit_Framework_TestCase
 			],
 		]));
 
-		$manager = new VSCManager($this->gitMock);
+		$this->vscManager->setLastCommitHash();
 
-		$manager->setLastCommitHash();
-
-		$this->assertSame($expected, $manager->findBy($needles));
+		$this->assertSame($expected, $this->vscManager->findBy($needles));
 	}
 
 	protected function assertHasBeenUpdated($commitSubString, $needles)
@@ -151,11 +157,9 @@ class VSCManagerTest extends \PHPUnit_Framework_TestCase
 			],
 		]));
 
-		$manager = new VSCManager($this->gitMock);
+		$this->vscManager->setLastCommitHash();
 
-		$manager->setLastCommitHash();
-
-		$this->assertFalse($manager->findBy($needles));
+		$this->assertFalse($this->vscManager->findBy($needles));
 	}
 
 	protected function assertNotNeedUpdate($needles)
@@ -185,10 +189,8 @@ class VSCManagerTest extends \PHPUnit_Framework_TestCase
 			],
 		]));
 
-		$manager = new VSCManager($this->gitMock);
+		$this->vscManager->setLastCommitHash();
 
-		$manager->setLastCommitHash();
-
-		$this->assertFalse($manager->findBy($needles));
+		$this->assertFalse($this->vscManager->findBy($needles));
 	}
 }

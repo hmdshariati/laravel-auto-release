@@ -75,12 +75,12 @@ class Git
 	}
 
 	/**
-	 * @param string $remote
 	 * @param string $branch
+	 * @param string $remote
 	 *
-	 * @return string
+	 * @return Shell
 	 */
-	public function pull($remote = 'origin', $branch = 'master')
+	public function pull($branch = 'master', $remote = 'origin')
 	{
 		return $this->execShell(sprintf('git pull %s %s', $remote, $branch));
 	}
