@@ -55,7 +55,7 @@ class VSCManagerTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function can_find_commit_by_substring_if_passed_string_as_argument()
 	{
-		$this->assertNeedUpdate('(composer updated)', '(composer updated)');
+		$this->assertNeedUpdate('composer updated', 'composer updated');
 	}
 
 	/**
@@ -80,6 +80,22 @@ class VSCManagerTest extends \PHPUnit_Framework_TestCase
 	public function return_false_if_commits_contain_similar_but_not_same_substring()
 	{
 		$this->assertNeedUpdate('(composer updated)', ['(composer update)'], false);
+	}
+
+	/**
+	 * @test
+	 */
+	public function return_false_if_trying_to_find_by_empty_substring()
+	{
+		$this->assertNeedUpdate('', '', false);
+	}
+
+	/**
+	 * @test
+	 */
+	public function return_false_if_trying_to_find_by_array_with_empty_substring()
+	{
+		$this->assertNeedUpdate('', ['', ''], false);
 	}
 
 	/**
