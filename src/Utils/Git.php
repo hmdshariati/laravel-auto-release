@@ -82,7 +82,7 @@ class Git
 	 */
 	public function pull($remote = 'origin', $branch = 'master')
 	{
-		return $this->execShell(sprintf('git pull %s %s', [$remote, $branch]));
+		return $this->execShell(sprintf('git pull %s %s', $remote, $branch));
 	}
 
 	/**
@@ -138,7 +138,7 @@ class Git
 		$result = $this->shell->execCommand($command);
 
 		if ($toArray) {
-			$result = $result->getOut();
+			$result = $result->toArray();
 		}
 
 		return $result;

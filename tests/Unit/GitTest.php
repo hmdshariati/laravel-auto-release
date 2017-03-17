@@ -60,6 +60,108 @@ class GitTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
+	public function can_make_correct_pull_to_origin_master()
+	{
+		$expectedCommand = 'git pull origin master';
+		$actualCommand = '';
+
+		$this->git->shouldReceive('execShell')->once()->andReturnUsing(function ($command) use (&$actualCommand) {
+			$actualCommand = $command;
+		});
+
+		$this->git->pull();
+
+		$this->assertSame($expectedCommand, $actualCommand);
+	}
+
+	/**
+	 * @test
+	 */
+	public function can_make_correct_pull_to_custom_remote_and_branch()
+	{
+		$expectedCommand = 'git pull custom_remote custom_branch';
+		$actualCommand = '';
+
+		$this->git->shouldReceive('execShell')->once()->andReturnUsing(function ($command) use (&$actualCommand) {
+			$actualCommand = $command;
+		});
+
+		$this->git->pull('custom_remote', 'custom_branch');
+
+		$this->assertSame($expectedCommand, $actualCommand);
+	}
+
+	/**
+	 * @test
+	 */
+	public function can_make_correct_reset()
+	{
+		$expectedCommand = 'git reset --hard';
+		$actualCommand = '';
+
+		$this->git->shouldReceive('execShell')->once()->andReturnUsing(function ($command) use (&$actualCommand) {
+			$actualCommand = $command;
+		});
+
+		$this->git->reset();
+
+		$this->assertSame($expectedCommand, $actualCommand);
+	}
+
+	/**
+	 * @test
+	 */
+	public function can_make_correct_clean()
+	{
+		$expectedCommand = 'git clean -f';
+		$actualCommand = '';
+
+		$this->git->shouldReceive('execShell')->once()->andReturnUsing(function ($command) use (&$actualCommand) {
+			$actualCommand = $command;
+		});
+
+		$this->git->clean();
+
+		$this->assertSame($expectedCommand, $actualCommand);
+	}
+
+	/**
+	 * @test
+	 */
+	public function can_make_correct_checkout_to_master_branch()
+	{
+		$expectedCommand = 'git checkout master';
+		$actualCommand = '';
+
+		$this->git->shouldReceive('execShell')->once()->andReturnUsing(function ($command) use (&$actualCommand) {
+			$actualCommand = $command;
+		});
+
+		$this->git->checkout();
+
+		$this->assertSame($expectedCommand, $actualCommand);
+	}
+
+	/**
+	 * @test
+	 */
+	public function can_make_correct_checkout_to_custom_branch()
+	{
+		$expectedCommand = 'git checkout custom_branch';
+		$actualCommand = '';
+
+		$this->git->shouldReceive('execShell')->once()->andReturnUsing(function ($command) use (&$actualCommand) {
+			$actualCommand = $command;
+		});
+
+		$this->git->checkout('custom_branch');
+
+		$this->assertSame($expectedCommand, $actualCommand);
+	}
+
+	/**
+	 * @test
+	 */
 	public function can_parse_additional_commits_data_and_add_it_to_return()
 	{
 		$this->git->shouldReceive('execShell')->andReturn([
@@ -104,7 +206,9 @@ class GitTest extends \PHPUnit_Framework_TestCase
 
 		$buildCommand = $this->getProtectedMethod('\AndrewLrrr\LaravelProjectBuilder\Utils\Git', 'buildCommand');
 
-		$actualCommand = $buildCommand->invokeArgs(new Git(new Shell()), [10, ['message', 'author', 'date', 'email']]);
+		$shellMock = \Mockery::mock('\AndrewLrrr\LaravelProjectBuilder\Utils\Shell');
+
+		$actualCommand = $buildCommand->invokeArgs(new Git($shellMock), [10, ['message', 'author', 'date', 'email']]);
 
 		$this->assertSame($expectedCommand, $actualCommand);
 	}

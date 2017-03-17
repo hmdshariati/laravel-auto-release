@@ -42,6 +42,11 @@ class ReleaseManager
 	/**
 	 * @var array
 	 */
+	protected $options = [];
+
+	/**
+	 * @var array
+	 */
 	protected $actionsMessages = [];
 
 	/**
@@ -69,6 +74,36 @@ class ReleaseManager
 		}
 
 		throw new BadMethodCallException("Method '${name}' does not exist.");
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getOptions()
+	{
+		return $this->options;
+	}
+
+	/**
+	 * @param array $options
+	 */
+	public function setOptions($options)
+	{
+		$this->options = $options;
+	}
+
+	/**
+	 * @param string $name
+	 *
+	 * @return mixed|null
+	 */
+	public function option($name)
+	{
+		if (array_key_exists($name, $this->options)) {
+			return $this->options[$name];
+		}
+
+		return null;
 	}
 
 	/**

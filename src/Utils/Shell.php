@@ -3,6 +3,8 @@
 namespace AndrewLrrr\LaravelProjectBuilder\Utils;
 
 use AndrewLrrr\LaravelProjectBuilder\Exceptions\ShellException;
+use Illuminate\Support\Facades\Artisan;
+use Symfony\Component\Console\Output\BufferedOutput;
 
 class Shell
 {
@@ -17,13 +19,20 @@ class Shell
 	protected $path = null;
 
 	/**
+	 * @var BufferedOutput
+	 */
+	protected $buffer;
+
+	/**
 	 * Shell constructor.
 	 *
+	 * @param BufferedOutput $buffer
 	 * @param string $path
 	 */
-	public function __construct($path = null)
+	public function __construct(BufferedOutput $buffer, $path = null)
 	{
-		$this->path = $path;
+		$this->buffer = $buffer;
+		$this->path   = $path;
 	}
 
 	/**
@@ -31,7 +40,7 @@ class Shell
 	 */
 	public function __toString()
 	{
-		return implode("\n", $this->out);
+		return $this->toString();
 	}
 
 	/**
@@ -53,9 +62,19 @@ class Shell
 	/**
 	 * @return array
 	 */
-	public function getOut()
+	public function toArray()
 	{
-		return $this->out;
+		return array_filter($this->out, function ($out) {
+			return ! empty($out);
+		});
+	}
+
+	/**
+	 * @return string
+	 */
+	public function toString()
+	{
+		return implode("\n", $this->out);
 	}
 
 	/**
@@ -66,6 +85,8 @@ class Shell
 	 */
 	public function execCommand($command)
 	{
+		$this->out = [];
+
 		if ($this->path) {
 			$command = 'cd ' . $this->path . '; ' . $command;
 		}
@@ -75,6 +96,22 @@ class Shell
 		if ($error) {
 			throw new ShellException($error);
 		}
+
+		return $this;
+	}
+
+	/**
+	 * @param string $command
+	 * @param array $parameters
+	 *
+	 * @return Shell
+	 */
+	public function execArtisan($command, array $parameters = [])
+	{
+		$this->out = [];
+
+		Artisan::call($command, $parameters, $this->buffer);
+		$this->out[] = $this->buffer->fetch();
 
 		return $this;
 	}

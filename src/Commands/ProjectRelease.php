@@ -13,7 +13,7 @@ class ProjectRelease extends Command
 	 *
 	 * @var string
 	 */
-	protected $signature = 'project:release {-cu} {-nu} {-ni}';
+	protected $signature = 'project:build {--cu} {--nu} {--ni}';
 
 	/**
 	 * The console command description.
@@ -45,23 +45,20 @@ class ProjectRelease extends Command
 	 */
 	public function handle()
 	{
-		$doComposerUpdate = (bool) $this->option('cu');
-		$doNpmUpdate      = (bool) $this->option('nu');
-		$doNpmInstall     = (bool) $this->option('ni');
-		
+		$this->releaseManager->setOptions($this->input->getOptions());
+
 		foreach ($this->releaseManager->getActions() as $action) {
 			try {
-				$this->info($this->releaseManager->getActionMessage($action));
-				if ($action === 'composer_update') {
-					$this->info($this->releaseManager->$action($doComposerUpdate));
+				$message = $this->releaseManager->getActionMessage($action);
+				$result  = $this->releaseManager->$action();
+				if (! empty($message)) {
+					$this->info($message);
 				}
-				if ($action === 'npm_install') {
-					$this->info($this->releaseManager->$action($doNpmInstall));
+				if (! empty($result)) {
+					$this->line($result);
+				} elseif (! empty($message)) {
+					$this->line('');
 				}
-				if ($action === 'npm_update') {
-					$this->info($this->releaseManager->$action($doNpmUpdate));
-				}
-				$this->info($this->releaseManager->$action());
 			} catch (ShellException $se) {
 				$this->error($se);
 			} catch (\BadFunctionCallException $be) {

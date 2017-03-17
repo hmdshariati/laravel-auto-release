@@ -4,6 +4,7 @@ use AndrewLrrr\LaravelProjectBuilder\Commands\ProjectRelease;
 use AndrewLrrr\LaravelProjectBuilder\Utils\Git;
 use AndrewLrrr\LaravelProjectBuilder\Utils\Shell;
 use Illuminate\Support\Facades\Artisan;
+use Symfony\Component\Console\Output\BufferedOutput;
 
 class ServiceProvider extends \Illuminate\Support\ServiceProvider
 {
@@ -23,48 +24,55 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 	{
 		$this->app->singleton('project.builder', function ($app) {
 			$basePath       = function_exists('base_path') ? base_path() : __DIR__ . '/../';
-			$shell          = new Shell($basePath);
+			$shell          = new Shell(new BufferedOutput(), $basePath);
 			$git            = new Git($shell);
 			$vscManager     = new VSCManager($git);
 			$releaseManager = new ReleaseManager($shell, $vscManager);
 
 			$releaseManager->register('down', function () {
-				Artisan::call('down');
-			}, 'Put the application into maintenance mode');
+				return $this->shell->execArtisan('down');
+			}, 'Putting the application into maintenance mode...');
+
+			$releaseManager->register('set_last_commit_hash', function () {
+				$this->vscManager->setLastCommitHash();
+			}, 'Fixing current git commit before pull...');
 
 			$releaseManager->register('git_clean', function () {
 				return $this->vscManager->clean();
-			}, 'Removing untracked files');
+			}, 'Removing untracked files...');
 
 			$releaseManager->register('git_reset', function () {
 				return $this->vscManager->reset();
-			}, 'Resetting git local changes');
+			}, 'Resetting git local changes...');
 
 			$releaseManager->register('git_checkout', function () {
 				return $this->vscManager->checkout();
-			}, 'Check outing to git master branch');
+			}, 'Check outing to git master branch...');
 
 			$releaseManager->register('git_pull', function () {
 				return $this->vscManager->pull();
-			}, 'Pulling latest changes');
+			}, 'Pulling latest changes...');
 
 			$releaseManager->register('migrations', function () {
 				Artisan::call('migrate', ['--force' => true]);
-			}, 'Running migrations');
+			}, 'Running migrations...');
 
-			$releaseManager->register('composer_update', function ($force) {
+			$releaseManager->register('composer_update', function () {
+				$force = (bool) $this->option('cu');
 				if ($force || $this->vscManager->findBy(['(composer updated)', '(composer update)'])) {
 					return $this->shell->execCommand('composer update');
 				}
 			}, 'Defining if composer needs to be updated...');
 
-			$releaseManager->register('npm_install', function ($force) {
+			$releaseManager->register('npm_install', function () {
+				$force = (bool) $this->option('ni');
 				if ($force || $this->vscManager->findBy(['(npm installed)', '(npm install)'])) {
 					return $this->shell->execCommand('npm install');
 				}
 			}, 'Defining if npm needs to be installed...');
 
-			$releaseManager->register('npm_update', function ($force) {
+			$releaseManager->register('npm_update', function () {
+				$force = (bool) $this->option('nu');
 				if ($force || $this->vscManager->findBy(['(npm updated)', '(npm update)'])) {
 					return $this->shell->execCommand('npm update');
 				}
@@ -72,29 +80,35 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
 			$releaseManager->register('optimize', function () {
 				if (function_exists('app') && app()->environment('production')) {
-					Artisan::call('optimize');
+					return $this->shell->execArtisan('optimize');
 				}
-			}, 'Optimizing the framework for better performance');
+			}, 'Optimizing the framework for better performance...');
 
-			$releaseManager->register('cache_config', function () {
+			$releaseManager->register('config_cache', function () {
 				if (function_exists('app') && app()->environment('production')) {
-					Artisan::call('config:cache');
+					return $this->shell->execArtisan('config:cache');
 				}
-			}, 'Optimizing the framework for better performance');
+			}, 'Creating a cache file for faster configuration loading...');
+
+			$releaseManager->register('route_cache', function () {
+				if (function_exists('app') && app()->environment('production')) {
+					return $this->shell->execArtisan('route:cache');
+				}
+			}, 'Creating a route cache file for faster route registration...');
 
 			$releaseManager->register('laravel-mix', function () {
 				if (function_exists('app')) {
 					return $this->shell->execCommand('npm run ' . (app()->environment('production') ? 'production' : 'dev'));
 				}
-			}, 'Build frontend');
+			}, 'Building frontend with Laravel Mix...');
 
 			$releaseManager->register('dump-autoload', function () {
 				return $this->shell->execCommand('composer dump-autoload');
-			}, 'Performing composer dump-autoload');
+			}, 'Performing composer dump-autoload...');
 
-			$releaseManager->register('cache_route', function () {
-				Artisan::call('up');
-			}, 'Bring the application out of maintenance mode');
+			$releaseManager->register('up', function () {
+				return $this->shell->execArtisan('up');
+			}, 'Bringing the application out of maintenance mode...');
 		});
 
 		$this->app->alias('project.builder', 'AndrewLrrr\LaravelProjectBuilder\ReleaseManager');
@@ -113,6 +127,6 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 	 */
 	public function provides()
 	{
-		return ['project.builder', 'command.debugbar.clear'];
+		return ['project.builder'];
 	}
 }
