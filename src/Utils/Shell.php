@@ -79,16 +79,18 @@ class Shell
 
 	/**
 	 * @param string $command
+	 * @param string $path
 	 *
 	 * @return Shell
-	 * @throws ShellException
 	 */
-	public function execCommand($command)
+	public function execCommand($command, $path = null)
 	{
 		$this->out = [];
 
-		if ($this->path) {
-			$command = 'cd ' . $this->path . '; ' . $command;
+		$path = $path ? $path : $this->path;
+
+		if ($path) {
+			$command = 'cd ' . $path . ' && ' . $command;
 		}
 
 		exec($command . ' 2>&1', $this->out, $error);

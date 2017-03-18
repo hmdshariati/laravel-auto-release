@@ -51,6 +51,27 @@ class ShellTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
+	public function can_optionally_change_base_path_and_execute_command()
+	{
+		$basePath = __DIR__;
+		$newPath  = __DIR__ . '/../files';
+
+		$shell = new Shell($this->bufferMock, $basePath);
+
+		$expected = [
+				'file1.txt',
+				'file2.txt',
+				'file3.txt',
+		];
+
+		$command = 'find -type f -printf "%f\n"';
+
+		$this->assertEquals($expected, $shell->execCommand($command, $newPath)->toArray());
+	}
+
+	/**
+	 * @test
+	 */
 	public function can_execute_artisan_command()
 	{
 		Artisan::shouldReceive('call')->once()->andReturn(1);
