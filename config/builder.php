@@ -2,7 +2,7 @@
 
 return [
 	'command' => [
-		'signature'   => 'project:build {--cu} {--nu} {--ni}',
+		'signature'   => 'project:build {--composer-update}',
 		'description' => 'Run build project',
 	],
 	'vsc' => [

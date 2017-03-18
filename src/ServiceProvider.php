@@ -60,8 +60,8 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 			}, 'Running migrations...');
 
 			$releaseManager->register('composer_update', function () {
-				$force = (bool) $this->option('cu');
-				if ($force || $this->vscManager->findBy(['(composer updated)', '(composer update)'])) {
+				$force = (bool) $this->option('composer-update');
+				if ($force || $this->vscManager->findBy('composer update')) {
 					return $this->shell->execCommand('composer update')->toString();
 				}
 			}, 'Defining if composer needs to be updated...');

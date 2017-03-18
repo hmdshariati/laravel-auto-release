@@ -55,7 +55,7 @@ class VSCManagerTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function can_find_commit_by_substring_if_passed_string_as_argument()
 	{
-		$this->assertNeedUpdate('composer updated', 'composer updated');
+		$this->assertNeedUpdate('composer updated', 'composer update');
 	}
 
 	/**
