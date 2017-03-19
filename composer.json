@@ -1,7 +1,7 @@
 {
 	"name": "andrewlrrr/laravel-project-builder",
-	"description": "This is console command which helps developers to build and support the project up to date, synchronize updates composer and npm, collect frontend etc.",
-	"keywords": ["laravel", "artisan", "console", "build", "composer", "npm", "laravel-elixir", "laravel-mix", "git"],
+	"description": "Helps developers to release and update project.",
+	"keywords": ["laravel", "artisan", "console", "build", "release", "composer", "npm", "laravel-elixir", "laravel-mix", "git"],
 	"license": "MIT",
 	"authors": [
 		{
