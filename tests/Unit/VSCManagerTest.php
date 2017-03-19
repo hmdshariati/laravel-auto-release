@@ -2,7 +2,6 @@
 
 namespace Tests\Unit;
 
-use AndrewLrrr\LaravelProjectBuilder\VSCManager;
 use Tests\Helpers\Traits\TestHelper;
 
 class VSCManagerTest extends \PHPUnit_Framework_TestCase
@@ -26,7 +25,7 @@ class VSCManagerTest extends \PHPUnit_Framework_TestCase
 	{
 		parent::setUp();
 
-		$this->gitMock = \Mockery::mock('\AndrewLrrr\LaravelProjectBuilder\Utils\Git');
+		$this->gitMock    = \Mockery::mock('\AndrewLrrr\LaravelProjectBuilder\Utils\Git');
 		$this->vscManager = \Mockery::mock('\AndrewLrrr\LaravelProjectBuilder\VSCManager', [$this->gitMock])
 			->shouldAllowMockingProtectedMethods()
 			->makePartial();

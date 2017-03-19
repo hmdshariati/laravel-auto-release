@@ -70,6 +70,25 @@ class ReleaseManagerTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
+	public function can_set_and_returns_null_value_if_option_does_not_exist()
+	{
+		$manager = new ReleaseManager($this->shellMock, $this->vscManagerMock);
+
+		$manager->setOptions([
+			'op1' => true,
+			'op2' => 'Hello',
+		]);
+
+		$this->assertCount(2, $manager->getOptions());
+
+		$this->assertSame('Hello', $manager->option('op2'));
+
+		$this->assertNull($manager->option('op3'));
+	}
+
+	/**
+	 * @test
+	 */
 	public function can_insert_new_methods_after()
 	{
 		$manager = new ReleaseManager($this->shellMock, $this->vscManagerMock);
