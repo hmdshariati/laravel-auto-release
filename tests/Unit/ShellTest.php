@@ -120,6 +120,20 @@ class ShellTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
+	public function returns_empty_string_if_output_is_empty()
+	{
+		Artisan::shouldReceive('call')->once()->andReturn('');
+
+		$this->bufferMock->shouldReceive('fetch')->once()->andReturn('');
+
+		$command = 'artisan:command';
+
+		$this->assertSame('', $this->shell->execArtisan($command)->toString());
+	}
+
+	/**
+	 * @test
+	 */
 	public function has_correctly_output_after_multiple_invokes()
 	{
 		$expected = [

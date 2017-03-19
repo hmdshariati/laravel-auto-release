@@ -35,7 +35,7 @@ composer require andrewlrrr/laravel-project-builder
 After updating composer, add the ServiceProvider to the providers array in `config/app.php`:
 
 ```
-AndrewLrrr\LaravelProjectBuilder\ServiceProvider
+AndrewLrrr\LaravelProjectBuilder\ServiceProvider::class
 ```
 
 If you want to redefine command name and description copy the package config to your local config with the publish command:
@@ -142,26 +142,26 @@ Well, now that you know how to manage commands let's try to add a few and explor
 ```php
 $releaseManager = app()->make('project.builder');
 
-$releaseManager->register('npm_install', function () {
+$releaseManager->before('down')->register('npm_install', function () {
     $force = (bool) $this->option('npm-install');
     if ($force || $this->vscManager->findBy('npm install')) {
         return $this->shell->execCommand('npm install')->toString();
     }
 }, 'Defining if npm needs to be updated...');
 
-$releaseManager->register('laravel_mix', function () {
+$releaseManager->after('npm_install')->register('laravel_mix', function () {
     $force = (bool) $this->option('build-frontend');
     if ($force || $this->vscManager->findBy(['style', 'js', 'script', 'sass'])) {
         return $this->shell->execCommand('npm run ' . (app()->environment('production') ? 'production' : 'dev'))->toString();
     }
 }, 'Defining if frontend needs to be built...');
 
-$releaseManager->register('production_optimize', function () {
+$releaseManager->after('laravel_mix')->register('production_optimize', function () {
     $message = '';
 
     if (app()->environment('production')) {
         $message .= $this->shell->execArtisan('optimize')->toString();
-        $message .= $this->shell->execArtisan('config.:cache')->toString();
+        $message .= $this->shell->execArtisan('config:cache')->toString();
         $message .= $this->shell->execArtisan('route:cache')->toString();
     }
 

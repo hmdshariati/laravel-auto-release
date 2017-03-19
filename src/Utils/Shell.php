@@ -74,7 +74,11 @@ class Shell
 	 */
 	public function toString()
 	{
-		return rtrim(implode("\n", $this->out), "\n") . "\n";
+		if (! empty($this->out)) {
+			return rtrim(implode("\n", $this->out), "\n") . "\n";
+		}
+
+		return '';
 	}
 
 	/**
@@ -113,7 +117,11 @@ class Shell
 		$this->out = [];
 
 		Artisan::call($command, $parameters, $this->buffer);
-		$this->out[] = $this->buffer->fetch();
+		$out = $this->buffer->fetch();
+
+		if (! empty($out)) {
+			$this->out[] = $out;
+		}
 
 		return $this;
 	}
