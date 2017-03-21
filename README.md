@@ -44,7 +44,24 @@ If you want to redefine command name and description copy the package config to 
 php artisan vendor:publish --provider="AndrewLrrr\LaravelProjectBuilder\ServiceProvider"
 ```
 
-In additional to command settings in the config file, you can change `git` settings. One of them `log_depth` needs to be explained. Increase it if you or somebody on your team making a lot of commits (more `log_depth` value) before push them. 
+By default Laravel Project Builder has only one command option `--composer-update` to force composer update but you can expand it easily. Just redefine the command name in config file as example (from one of my real projects):
+
+```
+nano config/builder.php
+
+[...]
+'signature' => 'project:build {--composer-update} {--npm-install} {--build-frontend}',
+[...]
+```
+
+In additional to command settings in the config file, you can change `git` settings. One of them `log_depth` needs to be explained. Increase it if you or somebody on your team making a lot of commits (more `log_depth` value) before push them.
+
+After installation you need to commit file changes because Laravel Project Builder will start `git clean` and `git reset` commands which resetting all changed and untracked files. You can remove this commands (I will tell about later) but now you should do next:
+
+```
+git add .
+git commit -m "Installed Laravel Project Builder"
+```
 
 ## Usage
 
@@ -54,7 +71,7 @@ The first step you can just run command:
 php artisan project:build
 ```
 
-**WARNING** before running this command you must commit all your changes overwise all changed and untracked files will be resetting.
+**WARNING** before running this command you must commit all your changes overwise all changed and untracked files will be resetting!
 
 This will run the sequence of actions:
 
