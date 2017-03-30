@@ -3,7 +3,6 @@
 namespace Tests\Unit;
 
 use AndrewLrrr\LaravelProjectBuilder\ReleaseManager;
-use Illuminate\Support\Facades\Config;
 
 class ReleaseManagerTest extends TestCase
 {
@@ -358,7 +357,7 @@ class ReleaseManagerTest extends TestCase
 	/**
 	 * @test
 	 */
-	public function can_execute_method_if_file_has_been_changed()
+	public function can_correctly_compare_files_and_execute_method_if_file_has_been_changed()
 	{
 		$this->vscManagerMock->shouldReceive('modifiedFiles')->times(2)->andReturn([
 			'composer.json',
@@ -371,7 +370,7 @@ class ReleaseManagerTest extends TestCase
 
 		$this->manager->setWatch([
 			'action1' => ['composer.json', 'composer.lock'],
-			'action3' => 'config/app.php',
+			'action3' => '/config/app.php',
 		]);
 
 		$this->manager->register('action1', function () {
@@ -436,6 +435,150 @@ class ReleaseManagerTest extends TestCase
 		$this->assertSame('action2', call_user_func([$this->manager, 'action2']));
 		$this->assertSame('action3', call_user_func([$this->manager, 'action3']));
 		$this->assertFalse(call_user_func([$this->manager, 'action4']));
+	}
+
+	/**
+	 * @test
+	 */
+	public function can_skip_execute_method_if_files_in_directory_have_not_been_changed()
+	{
+		$this->vscManagerMock->shouldReceive('modifiedFiles')->times(2)->andReturn([
+				'config/acme.php',
+				'config/app.php',
+				'npm-shrinkwrap.json',
+				'package.json',
+		]);
+
+		$this->vscManagerMock->shouldReceive('files')->times(2)->andReturn([
+				'config/acme.php',
+				'config/app.php',
+				'npm-shrinkwrap.json',
+				'package.json',
+		]);
+
+		$this->manager->setWatch([
+				'action1' => ['composer.json', 'composer.lock'],
+				'action3' => 'public',
+		]);
+
+		$this->manager->register('action1', function () {
+			return 'action1';
+		});
+
+		$this->manager->register('action2', function () {
+			return 'action2';
+		});
+
+		$this->manager->register('action3', function () {
+			return 'action3';
+		});
+
+		$this->assertFalse(call_user_func([$this->manager, 'action1']));
+		$this->assertSame('action2', call_user_func([$this->manager, 'action2']));
+		$this->assertFalse(call_user_func([$this->manager, 'action3']));
+	}
+
+	/**
+	 * @test
+	 */
+	public function can_correctly_compare_files_and_execute_method_if_files_in_directory_have_been_changed()
+	{
+		$this->vscManagerMock->shouldReceive('modifiedFiles')->times(3)->andReturn([
+				'config/acme.php',
+				'config/app.php',
+		]);
+
+		$this->vscManagerMock->shouldReceive('files')->times(3)->andReturn([
+				'config/acme.php',
+				'config/app.php',
+				'/package.json',
+				'resources/assets/js/app.js'
+		]);
+
+		$this->manager->setWatch([
+				'action1' => '/config',
+				'action3' => '',
+				'action4' => [
+					'webpack.mix.js',
+					'resources/assets/js',
+				],
+		]);
+
+		$this->manager->register('action1', function () {
+			return 'action1';
+		});
+
+		$this->manager->register('action2', function () {
+			return 'action2';
+		});
+
+		$this->manager->register('action3', function () {
+			return 'action3';
+		});
+
+		$this->manager->register('action4', function () {
+			return 'action4';
+		});
+
+		$this->manager->register('action5', function () {
+			return 'action5';
+		});
+
+		$this->assertSame('action1', call_user_func([$this->manager, 'action1']));
+		$this->assertSame('action2', call_user_func([$this->manager, 'action2']));
+		$this->assertSame('action3', call_user_func([$this->manager, 'action3']));
+		$this->assertSame('action4', call_user_func([$this->manager, 'action4']));
+	}
+
+	/**
+	 * @test
+	 */
+	public function can_toggle_method_execution_if_file_has_been_modified_or_files_in_directory_have_been_changed_or_not()
+	{
+		$this->vscManagerMock->shouldReceive('modifiedFiles')->times(4)->andReturn([
+				'webpack.mix.js',
+				'composer.json',
+				'composer.lock',
+		]);
+
+		$this->vscManagerMock->shouldReceive('files')->times(2)->andReturn([
+				'webpack.mix.js',
+				'composer.json',
+				'composer.lock',
+				'config/acme.php',
+				'resources/assets/js/app.js'
+		]);
+
+		$this->manager->setWatch([
+				'action1' => ['storage/cache/config.php', '/config'],
+				'action2' => ['package.json', 'npm-shrinkwrap.json'],
+				'action3' => ['composer.json', 'composer.lock'],
+				'action4' => [
+					'webpack.mix.js',
+					'resources/assets/js',
+				],
+		]);
+
+		$this->manager->register('action1', function () {
+			return 'action1';
+		});
+
+		$this->manager->register('action2', function () {
+			return 'action2';
+		});
+
+		$this->manager->register('action3', function () {
+			return 'action3';
+		});
+
+		$this->manager->register('action4', function () {
+			return 'action4';
+		});
+
+		$this->assertSame('action1', call_user_func([$this->manager, 'action1']));
+		$this->assertFalse(call_user_func([$this->manager, 'action2']));
+		$this->assertSame('action3', call_user_func([$this->manager, 'action3']));
+		$this->assertSame('action4', call_user_func([$this->manager, 'action4']));
 	}
 
 	/**

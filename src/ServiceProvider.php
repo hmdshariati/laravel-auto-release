@@ -30,7 +30,9 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 			$shell          = new Shell(new BufferedOutput(), $basePath);
 			$git            = new Git($shell);
 			$vscManager     = new VSCManager($git);
-			$releaseManager = new ReleaseManager($shell, $vscManager, $app['config']['builder.watch']);
+			$releaseManager = new ReleaseManager($shell, $vscManager);
+
+			$releaseManager->setWatch($app['config']['builder.watch']);
 
 			$releaseManager->register('down', function () use ($releaseManager) {
 				return $releaseManager->shell()->execArtisan('down')->toString();

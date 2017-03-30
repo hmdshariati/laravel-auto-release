@@ -6,7 +6,6 @@ use AndrewLrrr\LaravelProjectBuilder\Exceptions\ReleaseManagerException;
 use AndrewLrrr\LaravelProjectBuilder\Utils\Shell;
 use BadMethodCallException;
 use Closure;
-use Illuminate\Support\Facades\Config;
 
 class ReleaseManager
 {
@@ -260,7 +259,7 @@ class ReleaseManager
 		}
 
 		$watchedFiles = array_map(function ($file) {
-			return trim(trim($file), DIRECTORY_SEPARATOR);
+			return trim(trim($file), '/');
 		}, $watchedFiles);
 
 		if (! empty($this->compareModifierFiles($watchedFiles))) {
@@ -293,7 +292,7 @@ class ReleaseManager
 	{
 		$removeFileFromPath = function ($directory) {
 			$directory = rtrim($directory, basename($directory));
-			return trim(trim($directory), DIRECTORY_SEPARATOR);
+			return trim(trim($directory), '/');
 		};
 
 		$changedDirectories = array_map($removeFileFromPath, $this->vscManager->files());
