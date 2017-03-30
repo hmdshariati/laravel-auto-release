@@ -1,12 +1,12 @@
 <?php
 
-namespace Tests\Unit\Utils;
+namespace Tests\Unit;
 
 use AndrewLrrr\LaravelProjectBuilder\Utils\Shell;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Helpers\Traits\TestHelper;
 
-class ShellTest extends \PHPUnit_Framework_TestCase
+class ShellTest extends TestCase
 {
 	use TestHelper;
 
@@ -25,8 +25,6 @@ class ShellTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function setUp()
 	{
-		parent::setUp();
-
 		$this->bufferMock = \Mockery::mock('\Symfony\Component\Console\Output\BufferedOutput');
 
 		$this->shell = new Shell($this->bufferMock, __DIR__ . '/../files');
@@ -74,9 +72,9 @@ class ShellTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function can_execute_artisan_command()
 	{
-		Artisan::shouldReceive('call')->once()->andReturn(1);
+		Artisan::shouldReceive('call')->times(3)->andReturn(1);
 
-		$this->bufferMock->shouldReceive('fetch')->once()->andReturn("Some artisan command output\n");
+		$this->bufferMock->shouldReceive('fetch')->times(3)->andReturn("Some artisan command output\n");
 
 		$expected = "Some artisan command output\n";
 
@@ -97,21 +95,21 @@ class ShellTest extends \PHPUnit_Framework_TestCase
 	{
 		$expected = "Some command output\n";
 
-		Artisan::shouldReceive('call')->once()->andReturn(1);
+		Artisan::shouldReceive('call')->times(6)->andReturn(1);
 
-		$this->bufferMock->shouldReceive('fetch')->once()->andReturn("Some command output");
+		$this->bufferMock->shouldReceive('fetch')->twice()->andReturn("Some command output");
 
 		$command = 'artisan:command';
 
 		$this->assertSame($expected, $this->shell->execArtisan($command)->toString());
 		$this->assertEquals($expected, $this->shell->execArtisan($command));
 
-		$this->bufferMock->shouldReceive('fetch')->once()->andReturn("Some command output\n");
+		$this->bufferMock->shouldReceive('fetch')->twice()->andReturn("Some command output\n");
 
 		$this->assertSame($expected, $this->shell->execArtisan($command)->toString());
 		$this->assertEquals($expected, $this->shell->execArtisan($command));
 
-		$this->bufferMock->shouldReceive('fetch')->once()->andReturn("Some command output\n\n\n");
+		$this->bufferMock->shouldReceive('fetch')->twice()->andReturn("Some command output\n\n\n");
 
 		$this->assertSame($expected, $this->shell->execArtisan($command)->toString());
 		$this->assertEquals($expected, $this->shell->execArtisan($command));

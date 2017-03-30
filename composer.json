@@ -1,6 +1,6 @@
 {
-	"name": "andrewlrrr/laravel-project-builder",
-	"description": "Helps developers to release and update project.",
+	"name": "andrewlrrr/laravel-auto-deployment",
+	"description": "Helps in automation and deployment project.",
 	"keywords": ["laravel", "artisan", "console", "build", "release", "composer", "npm", "laravel-elixir", "laravel-mix", "git"],
 	"license": "MIT",
 	"authors": [
@@ -10,7 +10,7 @@
 		}
 	],
 	"require": {
-		"php": ">=5.4.0",
+		"php": ">=5.5.9",
 		"illuminate/support": "^5.0,<5.5",
 		"illuminate/console": "^5.0,<5.5"
 	},

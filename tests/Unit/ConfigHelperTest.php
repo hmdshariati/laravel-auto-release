@@ -10,7 +10,7 @@ class ConfigHelperFake
 	use ConfigHelper;
 }
 
-class ConfigHelperTest extends \PHPUnit_Framework_TestCase
+class ConfigHelperTest extends TestCase
 {
 	/**
 	 * @test
@@ -30,7 +30,6 @@ class ConfigHelperTest extends \PHPUnit_Framework_TestCase
 		$this->assertSame(['This is array'], $helper->findConfigOrDefault('some.config.array', ['Default array']));
 
 		Config::shouldReceive('has')->once()->andReturn(false);
-		Config::shouldReceive('get')->once()->andReturnNull();
 
 		$this->assertSame('This default if null', $helper->findConfigOrDefault('some.config.null', 'This default if null'));
 	}

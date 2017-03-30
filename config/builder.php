@@ -2,12 +2,21 @@
 
 return [
 	'command' => [
-		'signature'   => 'project:build {--composer-update}',
-		'description' => 'Run build project',
+		'signature'   => 'project:release',
+		'description' => 'Release project',
 	],
 	'vsc' => [
-		'log_depth' => 10,
-		'remote'    => 'origin',
-		'branch'    => 'master',
-	]
+		'remote' => 'origin',
+		'branch' => 'master',
+	],
+	'watch' => [
+		'composer_update' => ['composer.json', 'composer.lock'],
+		'npm_install'     => ['package.json', 'npm-shrinkwrap.json'],
+		'laravel_mix'     => [
+			'webpack.mix.js',
+			'resources/assets/js',
+			'resources/assets/sass',
+			'resources/assets/fonts',
+		],
+	],
 ];

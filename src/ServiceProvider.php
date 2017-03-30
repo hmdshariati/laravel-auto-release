@@ -3,6 +3,7 @@
 use AndrewLrrr\LaravelProjectBuilder\Commands\BuildCommand;
 use AndrewLrrr\LaravelProjectBuilder\Utils\Git;
 use AndrewLrrr\LaravelProjectBuilder\Utils\Shell;
+use Illuminate\Support\Facades\Config;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 class ServiceProvider extends \Illuminate\Support\ServiceProvider
@@ -29,45 +30,42 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 			$shell          = new Shell(new BufferedOutput(), $basePath);
 			$git            = new Git($shell);
 			$vscManager     = new VSCManager($git);
-			$releaseManager = new ReleaseManager($shell, $vscManager);
+			$releaseManager = new ReleaseManager($shell, $vscManager, $app['config']['builder.watch']);
 
-			$releaseManager->register('down', function () {
-				return $this->shell->execArtisan('down')->toString();
+			$releaseManager->register('down', function () use ($releaseManager) {
+				return $releaseManager->shell()->execArtisan('down')->toString();
 			}, 'Putting the application into maintenance mode...');
 
-			$releaseManager->register('set_last_commit_hash', function () {
-				$this->vscManager->setLastCommitHash();
+			$releaseManager->register('set_last_commit_hash', function () use ($releaseManager) {
+				$releaseManager->vsc()->setLastCommitHash();
 			}, 'Fixing current git commit before pull...');
 
-			$releaseManager->register('git_clean', function () {
-				return $this->vscManager->clean();
+			$releaseManager->register('git_clean', function () use ($releaseManager) {
+				return $releaseManager->vsc()->clean();
 			}, 'Removing untracked files...');
 
-			$releaseManager->register('git_reset', function () {
-				return $this->vscManager->reset();
+			$releaseManager->register('git_reset', function () use ($releaseManager) {
+				return $releaseManager->vsc()->reset();
 			}, 'Resetting git local changes...');
 
-			$releaseManager->register('git_checkout', function () {
-				return $this->vscManager->checkout();
+			$releaseManager->register('git_checkout', function () use ($releaseManager) {
+				return $releaseManager->vsc()->checkout();
 			}, 'Check outing to git master branch...');
 
-			$releaseManager->register('git_pull', function () {
-				return $this->vscManager->pull();
+			$releaseManager->register('git_pull', function () use ($releaseManager) {
+				return $releaseManager->vsc()->pull();
 			}, 'Pulling latest changes...');
 
-			$releaseManager->register('migrations', function () {
-				return $this->shell->execArtisan('migrate', ['--force' => true])->toString();
+			$releaseManager->register('migrations', function () use ($releaseManager) {
+				return $releaseManager->shell()->execArtisan('migrate', ['--force' => true])->toString();
 			}, 'Running migrations...');
 
-			$releaseManager->register('composer_update', function () {
-				$force = (bool) $this->option('composer-update');
-				if ($force || $this->vscManager->findBy('composer update')) {
-					return $this->shell->execCommand('composer update')->toString();
-				}
+			$releaseManager->register('composer_update', function () use ($releaseManager) {
+				return $releaseManager->shell()->execCommand('composer update')->toString();
 			}, 'Defining if composer needs to be updated...');
 
-			$releaseManager->register('up', function () {
-				return $this->shell->execArtisan('up')->toString();
+			$releaseManager->register('up', function () use ($releaseManager) {
+				return $releaseManager->shell()->execArtisan('up')->toString();
 			}, 'Bringing the application out of maintenance mode!');
 
 			return $releaseManager;

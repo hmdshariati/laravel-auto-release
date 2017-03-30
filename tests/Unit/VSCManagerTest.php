@@ -2,9 +2,10 @@
 
 namespace Tests\Unit;
 
+use Illuminate\Support\Facades\Config;
 use Tests\Helpers\Traits\TestHelper;
 
-class VSCManagerTest extends \PHPUnit_Framework_TestCase
+class VSCManagerTest extends TestCase
 {
 	use TestHelper;
 
@@ -14,7 +15,7 @@ class VSCManagerTest extends \PHPUnit_Framework_TestCase
 	protected $gitMock;
 
 	/**
-	 * @var \Mockery\MockInterface
+	 * @var \AndrewLrrr\LaravelProjectBuilder\VSCManager
 	 */
 	protected $vscManager;
 
@@ -23,14 +24,13 @@ class VSCManagerTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function setUp()
 	{
-		parent::setUp();
-
-		$this->gitMock    = \Mockery::mock('\AndrewLrrr\LaravelProjectBuilder\Utils\Git');
-		$this->vscManager = \Mockery::mock('\AndrewLrrr\LaravelProjectBuilder\VSCManager', [$this->gitMock])
+		$this->gitMock = \Mockery::mock('\AndrewLrrr\LaravelProjectBuilder\Utils\Git')
 			->shouldAllowMockingProtectedMethods()
 			->makePartial();
 
-		$this->vscManager->shouldReceive('findConfigOrDefault')->andReturnNull();
+		$this->vscManager = \Mockery::mock('\AndrewLrrr\LaravelProjectBuilder\VSCManager', [$this->gitMock])
+			->shouldAllowMockingProtectedMethods()
+			->makePartial();
 	}
 
 	/**
@@ -52,160 +52,225 @@ class VSCManagerTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
-	public function can_find_commit_by_substring_if_passed_string_as_argument()
+	public function can_checkout_to_set_branch()
 	{
-		$this->assertNeedUpdate('composer updated', 'composer update');
+		Config::shouldReceive('has')->once()->andReturn(true);
+		Config::shouldReceive('get')->once()->andReturn('tested_branch');
+
+		$this->gitMock->shouldReceive('checkout')->once()->andReturnUsing(function ($branch) {
+			return 'Checkout to branch ' . $branch;
+		});
+
+		$this->assertSame('Checkout to branch tested_branch', $this->vscManager->checkout());
 	}
 
 	/**
 	 * @test
 	 */
-	public function can_find_commit_by_substring_if_passed_array_as_argument_for_first_array_element()
+	public function can_checkout_to_default_branch()
 	{
-		$this->assertNeedUpdate('(composer update)', ['(composer update)', '(composer updated)']);
+		Config::shouldReceive('has')->once()->andReturn(false);
+
+		$this->gitMock->shouldReceive('checkout')->once()->andReturnUsing(function ($branch) {
+			return 'Checkout to branch ' . $branch;
+		});
+
+		$this->assertSame('Checkout to branch master', $this->vscManager->checkout());
 	}
 
 	/**
 	 * @test
 	 */
-	public function can_find_commit_by_substring_if_passed_array_as_argument_for_last_array_element()
+	public function can_pull_from_set_remote_and_branch()
 	{
-		$this->assertNeedUpdate('(composer updated)', ['(composer update)', '(composer updated)']);
+		Config::shouldReceive('has')->once()->andReturn(true);
+		Config::shouldReceive('get')->once()->andReturn('tested_branch');
+		Config::shouldReceive('has')->once()->andReturn(true);
+		Config::shouldReceive('get')->once()->andReturn('tested_remote');
+
+		$this->gitMock->shouldReceive('pull')->once()->andReturnUsing(function ($branch, $remote) {
+			return 'Pulling from remote ' . $remote . ' and branch ' . $branch;
+		});
+
+		$this->assertSame('Pulling from remote tested_remote and branch tested_branch', $this->vscManager->pull());
 	}
 
 	/**
 	 * @test
 	 */
-	public function return_false_if_commits_contain_similar_but_not_same_substring()
+	public function can_pull_from_default_remote_and_branch()
 	{
-		$this->assertNeedUpdate('(composer updated)', ['(composer update)'], false);
+		Config::shouldReceive('has')->once()->andReturn(false);
+		Config::shouldReceive('has')->once()->andReturn(false);
+
+		$this->gitMock->shouldReceive('pull')->once()->andReturnUsing(function ($branch, $remote) {
+			return 'Pulling from remote ' . $remote . ' and branch ' . $branch;
+		});
+
+		$this->assertSame('Pulling from remote origin and branch master', $this->vscManager->pull());
 	}
 
 	/**
 	 * @test
 	 */
-	public function return_false_if_trying_to_find_by_empty_substring()
+	public function can_reset_local_changes()
 	{
-		$this->assertNeedUpdate('', '', false);
+		$this->gitMock->shouldReceive('reset')->once()->andReturnUsing(function () {
+			return 'HEAD is now at test';
+		});
+
+		$this->assertSame('HEAD is now at test', $this->vscManager->reset());
 	}
 
 	/**
 	 * @test
 	 */
-	public function return_false_if_trying_to_find_by_array_with_empty_substring()
+	public function can_clean_untracked_files()
 	{
-		$this->assertNeedUpdate('', ['', ''], false);
+		$this->gitMock->shouldReceive('clean')->once()->andReturnUsing(function () {
+			return 'Cleaning untracked files';
+		});
+
+		$this->assertSame('Cleaning untracked files', $this->vscManager->clean());
 	}
 
 	/**
 	 * @test
 	 */
-	public function return_false_if_commits_contain_substring_but_needed_commit_is_same_with_last_commit()
+	public function can_select_all_changed_files()
 	{
-		$this->assertHasBeenUpdated('(composer update)', ['(composer update)', '(composer updated)']);
-	}
+		$protectedProperty = $this->getProtectedProperty($this->vscManager, 'lastCommitHash');
+		$protectedProperty->setValue($this->vscManager, '7bf4079224bbd4b328e9aaef2fec9cf5505e886f');
 
-	/**
-	 * @test
-	 */
-	public function return_false_if_commits_not_contain_needed_substring()
-	{
-		$this->assertNotNeedUpdate(['(composer update)', '(composer updated)']);
-	}
-
-	protected function assertNeedUpdate($commitSubString, $needles, $expected = true)
-	{
-		$this->gitMock->shouldReceive('log')->once()->andReturn($this->convertArrayToCollectionOfObjects([
-			'68e9c7e4fa4465aa40db723d0a96dcda842e8532' => [
-				'hash' => '68e9c7e4fa4465aa40db723d0a96dcda842e8532',
-			]
-		]));
-
-		$this->gitMock->shouldReceive('log')->zeroOrMoreTimes()->andReturn($this->convertArrayToCollectionOfObjects([
+		$this->gitMock->shouldReceive('log')->once()->andReturn($this->convertArrayItemsToObjects([
 			'cd4415946fe4b67c6cccc303e4091fb39c30ff5a' => [
-				'hash'    => 'cd4415946fe4b67c6cccc303e4091fb39c30ff5a',
-				'message' => 'Added target blank to remaining detail page links at the catalog',
-			],
-			'a6b9472d98f135008279ad9ce32f77a7793d8325' => [
-				'hash'    => 'a6b9472d98f135008279ad9ce32f77a7793d8325',
-				'message' => 'Fixed catalog items teaser section styles.' . $commitSubString,
-			],
-			'68e9c7e4fa4465aa40db723d0a96dcda842e8532' => [
-				'hash'    => '68e9c7e4fa4465aa40db723d0a96dcda842e8532',
-				'message' => 'Added favicon and new tags to black list',
-			],
-			'7bf4079224bbd4b328e9aaef2fec9cf5505e886f' => [
-				'hash'    => '7bf4079224bbd4b328e9aaef2fec9cf5505e886f',
-				'message' => 'A little style fix',
+				'hash' => 'cd4415946fe4b67c6cccc303e4091fb39c30ff5a',
 			],
 		]));
 
-		$this->vscManager->setLastCommitHash();
+		$this->gitMock->shouldReceive('diff')->once()->andReturn([
+			'D   app/Presenters/Presenter.php',
+			'A   app/Presenters/BasePresenter.php',
+			'A   app/Providers/SeoTextServiceProvider.php',
+			'M  app/Utils/Str.php',
+			'D   config/acme.php',
+			'M    config/app.php',
+			'A    npm-shrinkwrap.json',
+			'M    package.json',
+		]);
 
-		$this->assertSame($expected, $this->vscManager->findBy($needles));
+		$expected = [
+			'app/Presenters/Presenter.php',
+			'app/Presenters/BasePresenter.php',
+			'app/Providers/SeoTextServiceProvider.php',
+			'app/Utils/Str.php',
+			'config/acme.php',
+			'config/app.php',
+			'npm-shrinkwrap.json',
+			'package.json',
+		];
+
+		$this->assertEquals($expected, $this->vscManager->files());
 	}
 
-	protected function assertHasBeenUpdated($commitSubString, $needles)
+	/**
+	 * @test
+	 */
+	public function can_select_all_modified_files()
 	{
-		$this->gitMock->shouldReceive('log')->once()->andReturn($this->convertArrayToCollectionOfObjects([
-			'68e9c7e4fa4465aa40db723d0a96dcda842e8532' => [
-				'hash' => '68e9c7e4fa4465aa40db723d0a96dcda842e8532',
-			]
-		]));
+		$protectedProperty = $this->getProtectedProperty($this->vscManager, 'lastCommitHash');
+		$protectedProperty->setValue($this->vscManager, '7bf4079224bbd4b328e9aaef2fec9cf5505e886f');
 
-		$this->gitMock->shouldReceive('log')->zeroOrMoreTimes()->andReturn($this->convertArrayToCollectionOfObjects([
+		$this->gitMock->shouldReceive('log')->once()->andReturn($this->convertArrayItemsToObjects([
 			'cd4415946fe4b67c6cccc303e4091fb39c30ff5a' => [
-				'hash'    => 'cd4415946fe4b67c6cccc303e4091fb39c30ff5a',
-				'message' => 'Added target blank to remaining detail page links at the catalog',
-			],
-			'a6b9472d98f135008279ad9ce32f77a7793d8325' => [
-				'hash'    => 'a6b9472d98f135008279ad9ce32f77a7793d8325',
-				'message' => 'Fixed catalog items teaser section styles.',
-			],
-			'68e9c7e4fa4465aa40db723d0a96dcda842e8532' => [
-				'hash'    => '68e9c7e4fa4465aa40db723d0a96dcda842e8532',
-				'message' => 'Added favicon. ' . $commitSubString . '. And added new tags to black list',
-			],
-			'7bf4079224bbd4b328e9aaef2fec9cf5505e886f' => [
-				'hash'    => '7bf4079224bbd4b328e9aaef2fec9cf5505e886f',
-				'message' => 'A little style fix',
+				'hash' => 'cd4415946fe4b67c6cccc303e4091fb39c30ff5a',
 			],
 		]));
 
-		$this->vscManager->setLastCommitHash();
+		$this->gitMock->shouldReceive('diff')->once()->andReturn([
+			'D   app/Presenters/Presenter.php',
+			'A   app/Presenters/BasePresenter.php',
+			'A   app/Providers/SeoTextServiceProvider.php',
+			'M  app/Utils/Str.php',
+			'D   config/acme.php',
+			'M    config/app.php',
+			'A    npm-shrinkwrap.json',
+			'M    package.json',
+		]);
 
-		$this->assertFalse($this->vscManager->findBy($needles));
+		$expected = [
+			'app/Utils/Str.php',
+			'config/app.php',
+			'package.json',
+		];
+
+		$this->assertEquals($expected, $this->vscManager->modifiedFiles());
 	}
 
-	protected function assertNotNeedUpdate($needles)
+	/**
+	 * @test
+	 */
+	public function can_select_all_added_files()
 	{
-		$this->gitMock->shouldReceive('log')->once()->andReturn($this->convertArrayToCollectionOfObjects([
-			'68e9c7e4fa4465aa40db723d0a96dcda842e8532' => [
-				'hash' => '68e9c7e4fa4465aa40db723d0a96dcda842e8532',
-			]
-		]));
+		$protectedProperty = $this->getProtectedProperty($this->vscManager, 'lastCommitHash');
+		$protectedProperty->setValue($this->vscManager, '7bf4079224bbd4b328e9aaef2fec9cf5505e886f');
 
-		$this->gitMock->shouldReceive('log')->zeroOrMoreTimes()->andReturn($this->convertArrayToCollectionOfObjects([
+		$this->gitMock->shouldReceive('log')->once()->andReturn($this->convertArrayItemsToObjects([
 			'cd4415946fe4b67c6cccc303e4091fb39c30ff5a' => [
-				'hash'    => 'cd4415946fe4b67c6cccc303e4091fb39c30ff5a',
-				'message' => 'Added target blank to remaining detail page links at the catalog',
-			],
-			'a6b9472d98f135008279ad9ce32f77a7793d8325' => [
-				'hash'    => 'a6b9472d98f135008279ad9ce32f77a7793d8325',
-				'message' => 'Fixed catalog items teaser section styles.',
-			],
-			'68e9c7e4fa4465aa40db723d0a96dcda842e8532' => [
-				'hash'    => '68e9c7e4fa4465aa40db723d0a96dcda842e8532',
-				'message' => 'Added favicon and new tags to black list',
-			],
-			'7bf4079224bbd4b328e9aaef2fec9cf5505e886f' => [
-				'hash'    => '7bf4079224bbd4b328e9aaef2fec9cf5505e886f',
-				'message' => 'A little style fix',
+				'hash' => 'cd4415946fe4b67c6cccc303e4091fb39c30ff5a',
 			],
 		]));
 
-		$this->vscManager->setLastCommitHash();
+		$this->gitMock->shouldReceive('diff')->once()->andReturn([
+			'D   app/Presenters/Presenter.php',
+			'A   app/Presenters/BasePresenter.php',
+			'A   app/Providers/SeoTextServiceProvider.php',
+			'M  app/Utils/Str.php',
+			'D   config/acme.php',
+			'M    config/app.php',
+			'A    npm-shrinkwrap.json',
+			'M    package.json',
+		]);
 
-		$this->assertFalse($this->vscManager->findBy($needles));
+		$expected = [
+			'app/Presenters/BasePresenter.php',
+			'app/Providers/SeoTextServiceProvider.php',
+			'npm-shrinkwrap.json',
+		];
+
+		$this->assertEquals($expected, $this->vscManager->addedFiles());
+	}
+
+	/**
+	 * @test
+	 */
+	public function can_select_all_deleted_files()
+	{
+		$protectedProperty = $this->getProtectedProperty($this->vscManager, 'lastCommitHash');
+		$protectedProperty->setValue($this->vscManager, '7bf4079224bbd4b328e9aaef2fec9cf5505e886f');
+
+		$this->gitMock->shouldReceive('log')->once()->andReturn($this->convertArrayItemsToObjects([
+			'cd4415946fe4b67c6cccc303e4091fb39c30ff5a' => [
+				'hash' => 'cd4415946fe4b67c6cccc303e4091fb39c30ff5a',
+			],
+		]));
+
+		$this->gitMock->shouldReceive('diff')->once()->andReturn([
+			'D   app/Presenters/Presenter.php',
+			'A   app/Presenters/BasePresenter.php',
+			'A   app/Providers/SeoTextServiceProvider.php',
+			'M  app/Utils/Str.php',
+			'D   config/acme.php',
+			'M    config/app.php',
+			'A    npm-shrinkwrap.json',
+			'M    package.json',
+		]);
+
+		$expected = [
+			'app/Presenters/Presenter.php',
+			'config/acme.php',
+		];
+
+		$this->assertEquals($expected, $this->vscManager->deletedFiles());
 	}
 }

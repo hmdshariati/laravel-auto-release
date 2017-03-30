@@ -3,10 +3,9 @@
 namespace Tests\Unit;
 
 use AndrewLrrr\LaravelProjectBuilder\Utils\Git;
-use AndrewLrrr\LaravelProjectBuilder\Utils\Shell;
 use Tests\Helpers\Traits\TestHelper;
 
-class GitTest extends \PHPUnit_Framework_TestCase
+class GitTest extends TestCase
 {
 	use TestHelper;
 
@@ -20,8 +19,6 @@ class GitTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function setUp()
 	{
-		parent::setUp();
-
 		$this->git = \Mockery::mock('\AndrewLrrr\LaravelProjectBuilder\Utils\Git')
 			->shouldAllowMockingProtectedMethods()
 			->makePartial();
@@ -39,7 +36,7 @@ class GitTest extends \PHPUnit_Framework_TestCase
 			'hash=7bf4079224bbd4b328e9aaef2fec9cf5505e886f',
 		]);
 
-		$expected = $this->convertArrayToCollectionOfObjects([
+		$expected = $this->convertArrayItemsToObjects([
 			'cd4415946fe4b67c6cccc303e4091fb39c30ff5a' => [
 				'hash' => 'cd4415946fe4b67c6cccc303e4091fb39c30ff5a',
 			],
@@ -162,6 +159,23 @@ class GitTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
+	public function can_make_correct_diff()
+	{
+		$expectedCommand = 'git diff --name-status hash1 hash2';
+		$actualCommand = '';
+
+		$this->git->shouldReceive('execShell')->once()->andReturnUsing(function ($command) use (&$actualCommand) {
+			$actualCommand = $command;
+		});
+
+		$this->git->diff('hash1', 'hash2');
+
+		$this->assertSame($expectedCommand, $actualCommand);
+	}
+
+	/**
+	 * @test
+	 */
 	public function can_parse_additional_commits_data_and_add_it_to_return()
 	{
 		$this->git->shouldReceive('execShell')->andReturn([
@@ -171,7 +185,7 @@ class GitTest extends \PHPUnit_Framework_TestCase
 			'hash=7bf4079224bbd4b328e9aaef2fec9cf5505e886f#message=A little style fix#author=Andrew Larin',
 		]);
 
-		$expected = $this->convertArrayToCollectionOfObjects([
+		$expected = $this->convertArrayItemsToObjects([
 			'cd4415946fe4b67c6cccc303e4091fb39c30ff5a' => [
 				'hash'    => 'cd4415946fe4b67c6cccc303e4091fb39c30ff5a',
 				'message' => 'Added target blank to remaining detail page links at the catalog',
@@ -211,19 +225,5 @@ class GitTest extends \PHPUnit_Framework_TestCase
 		$actualCommand = $buildCommand->invokeArgs(new Git($shellMock), [10, ['message', 'author', 'date', 'email']]);
 
 		$this->assertSame($expectedCommand, $actualCommand);
-	}
-
-	/**
-	 * @test
-	 */
-	public function can_get_last_commit_hash()
-	{
-		$this->git->shouldReceive('execShell')->once()->andReturn([
-			'hash=cd4415946fe4b67c6cccc303e4091fb39c30ff5a',
-		]);
-
-		$expected = 'cd4415946fe4b67c6cccc303e4091fb39c30ff5a';
-
-		$this->assertEquals($expected, $this->git->log(4)->first()->hash);
 	}
 }

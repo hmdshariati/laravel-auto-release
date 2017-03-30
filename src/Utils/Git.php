@@ -2,8 +2,6 @@
 
 namespace AndrewLrrr\LaravelProjectBuilder\Utils;
 
-use Illuminate\Support\Collection;
-
 class Git
 {
 	/**
@@ -25,7 +23,7 @@ class Git
 	 * @param int $historyDepth
 	 * @param array $fields
 	 *
-	 * @return Collection
+	 * @return array
 	 */
 	public function log($historyDepth = 1, array $fields = [])
 	{
@@ -53,11 +51,22 @@ class Git
 			return $carry;
 		}, []);
 
-		return collect($commits);
+		return $commits;
 	}
 
 	/**
-	 * @return Shell
+	 * @param string $fromCommitHah
+	 * @param string $toCommitHash
+	 *
+	 * @return array
+	 */
+	public function diff($fromCommitHah, $toCommitHash)
+	{
+		return $this->execShell(sprintf('git diff --name-status %s %s', $fromCommitHah, $toCommitHash), true);
+	}
+
+	/**
+	 * @return string
 	 */
 	public function clean()
 	{
@@ -67,7 +76,7 @@ class Git
 	/**
 	 * @param string $branch
 	 *
-	 * @return Shell
+	 * @return string
 	 */
 	public function checkout($branch = 'master')
 	{
@@ -78,7 +87,7 @@ class Git
 	 * @param string $branch
 	 * @param string $remote
 	 *
-	 * @return Shell
+	 * @return string
 	 */
 	public function pull($branch = 'master', $remote = 'origin')
 	{
@@ -86,7 +95,7 @@ class Git
 	}
 
 	/**
-	 * @return Shell
+	 * @return string
 	 */
 	public function reset()
 	{
@@ -131,7 +140,7 @@ class Git
 	 * @param string $command
 	 * @param bool $toArray
 	 *
-	 * @return Shell|array
+	 * @return string|array
 	 */
 	protected function execShell($command, $toArray = false)
 	{
@@ -141,6 +150,6 @@ class Git
 			$result = $result->toArray();
 		}
 
-		return $result;
+		return $result->toString();
 	}
 }

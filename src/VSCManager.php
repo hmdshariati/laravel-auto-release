@@ -4,10 +4,17 @@ namespace AndrewLrrr\LaravelProjectBuilder;
 
 use AndrewLrrr\LaravelProjectBuilder\Traits\ConfigHelper;
 use AndrewLrrr\LaravelProjectBuilder\Utils\Git;
+use Illuminate\Support\Arr;
 
 class VSCManager
 {
 	use ConfigHelper;
+
+	const MODIFIED = 'M';
+
+	const DELETED = 'D';
+
+	const ADDED = 'A';
 
 	/**
 	 * @var Git
@@ -18,6 +25,11 @@ class VSCManager
 	 * @var string|null
 	 */
 	protected $lastCommitHash = null;
+
+	/**
+	 * @var null|array
+	 */
+	protected $files;
 
 	/**
 	 * VSCManager constructor.
@@ -34,7 +46,7 @@ class VSCManager
 	 */
 	public function setLastCommitHash()
 	{
-		$this->lastCommitHash = $this->git->log(1)->first()->hash;
+		$this->lastCommitHash = Arr::first($this->git->log(1))->hash;
 	}
 
 	/**
@@ -50,7 +62,7 @@ class VSCManager
 	 */
 	public function clean()
 	{
-		return $this->git->clean()->toString();
+		return $this->git->clean();
 	}
 
 	/**
@@ -60,7 +72,7 @@ class VSCManager
 	{
 		return $this->git->checkout(
 			$this->findConfigOrDefault('builder.vsc.branch', 'master')
-		)->toString();
+		);
 	}
 
 	/**
@@ -71,7 +83,7 @@ class VSCManager
 		return $this->git->pull(
 			$this->findConfigOrDefault('builder.vsc.branch', 'master'),
 			$this->findConfigOrDefault('builder.vsc.remote', 'origin')
-		)->toString();
+		);
 	}
 
 	/**
@@ -79,47 +91,87 @@ class VSCManager
 	 */
 	public function reset()
 	{
-		return $this->git->reset()->toString();
+		return $this->git->reset();
 	}
 
 	/**
-	 * @param mixed $needles
-	 *
-	 * @return bool
+	 * @return array
 	 */
-	public function findBy($needles)
+	public function files()
 	{
-		if (! is_array($needles)) {
-			$needles = [(string) $needles];
-		}
-
-		return $this->compareCommits($needles);
+		return $this->cleanFileNames($this->getFiles());
 	}
 
 	/**
-	 * @param array $needles
-	 *
-	 * @return bool
+	 * @return array
 	 */
-	protected function compareCommits(array $needles)
+	public function modifiedFiles()
 	{
-		$commits = $this->git->log(
-			$this->findConfigOrDefault('builder.vsc.log_depth', 10),
-			['message']
-		);
+		return $this->getFilesByKey(self::MODIFIED);
+	}
 
-		foreach ($needles as $needle) {
-			foreach ($commits as $commit) {
-				if ($commit->hash === $this->lastCommitHash) {
-					break;
-				}
+	/**
+	 * @return array
+	 */
+	public function addedFiles()
+	{
+		return $this->getFilesByKey(self::ADDED);
+	}
 
-				if (str_contains(strtolower($commit->message), $needle)) {
-					return true;
-				}
-			}
+	/**
+	 * @return array
+	 */
+	public function deletedFiles()
+	{
+		return $this->getFilesByKey(self::DELETED);
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function getFiles()
+	{
+		if (is_null($this->lastCommitHash)) {
+			return [];
 		}
 
-		return false;
+		if (is_null($this->files)) {
+			$currentCommitHash = Arr::first($this->git->log(1))->hash;
+			$this->files = $this->git->diff($this->lastCommitHash, $currentCommitHash);
+		}
+
+		return $this->files;
+	}
+
+	/**
+	 * @param array $files
+	 *
+	 * @return array
+	 */
+	protected function cleanFileNames(array $files)
+	{
+		return array_map(function ($file) {
+			return trim(preg_replace('/[\w]+\s+?/', '', $file));
+		}, $files);
+	}
+
+	/**
+	 * @param $key
+	 *
+	 * @return array
+	 */
+	protected function getFilesByKey($key)
+	{
+		$files = $this->getFiles();
+
+		if (! empty($files)) {
+			$files = array_filter($files, function ($file) use ($key) {
+				return starts_with($file, $key);
+			});
+
+			return array_values($this->cleanFileNames($files));
+		}
+
+		return [];
 	}
 }

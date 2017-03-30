@@ -17,7 +17,7 @@ php artisan up
 Instead, you just run:
 
 ```
-php artisan project:build
+php artisan project:release
 ```
 
 And Laravel Project Builder will do all of this boring job for you. It's simple.
