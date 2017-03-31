@@ -248,9 +248,9 @@ class ReleaseManager
 			return trim(trim($file), '/');
 		}, $watchedFiles);
 
-		if (! empty($this->compareModifierFiles($watchedFiles))) {
+		if (! empty($this->compareModifiedFiles($watchedFiles))) {
 			return true;
-		} elseif (! empty($this->compareModifierDirectories($watchedFiles))) {
+		} elseif (! empty($this->compareModifiedDirectories($watchedFiles))) {
 			return true;
 		}
 
@@ -262,7 +262,7 @@ class ReleaseManager
 	 *
 	 * @return array
 	 */
-	protected function compareModifierFiles(array $watchedFiles)
+	protected function compareModifiedFiles(array $watchedFiles)
 	{
 		$changedFiles = $this->vscManager->modifiedFiles();
 
@@ -274,7 +274,7 @@ class ReleaseManager
 	 *
 	 * @return array
 	 */
-	protected function compareModifierDirectories(array $watchedFiles)
+	protected function compareModifiedDirectories(array $watchedFiles)
 	{
 		$removeFileFromPath = function ($directory) {
 			$directory = rtrim($directory, basename($directory));
