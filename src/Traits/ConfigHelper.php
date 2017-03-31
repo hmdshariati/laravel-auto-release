@@ -1,6 +1,6 @@
 <?php
 
-namespace AndrewLrrr\LaravelProjectBuilder\Traits;
+namespace AndrewLrrr\LaravelAutomateRelease\Traits;
 
 use Illuminate\Support\Facades\Config;
 

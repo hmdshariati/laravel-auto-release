@@ -1,8 +1,8 @@
 <?php
 
-namespace AndrewLrrr\LaravelProjectBuilder\Utils;
+namespace AndrewLrrr\LaravelAutomateRelease\Utils;
 
-use AndrewLrrr\LaravelProjectBuilder\Exceptions\ShellException;
+use AndrewLrrr\LaravelAutomateRelease\Exceptions\ShellException;
 use Illuminate\Support\Facades\Artisan;
 use Symfony\Component\Console\Output\BufferedOutput;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace AndrewLrrr\LaravelProjectBuilder\Utils;
+namespace AndrewLrrr\LaravelAutomateRelease\Utils;
 
 class Git
 {

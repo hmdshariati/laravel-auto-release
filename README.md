@@ -37,13 +37,13 @@ composer require andrewlrrr/laravel-automate-release
 After updating composer, add the ServiceProvider to the providers array in `config/app.php`:
 
 ```
-AndrewLrrr\LaravelProjectBuilder\ServiceProvider::class
+AndrewLrrr\LaravelAutomateRelease\ServiceProvider::class
 ```
 
 And copy the package config to your local config with the publish command:
 
 ```
-php artisan vendor:publish --provider="AndrewLrrr\LaravelProjectBuilder\ServiceProvider"
+php artisan vendor:publish --provider="AndrewLrrr\LaravelAutomateRelease\ServiceProvider"
 ```
 
 After installation you need to commit file changes because Laravel Project Builder will start `git clean` and `git reset` commands which resetting all changed and untracked files. You can remove this commands (I will tell about later) but now you should do next:

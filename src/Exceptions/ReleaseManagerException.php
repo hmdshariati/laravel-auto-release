@@ -1,6 +1,6 @@
 <?php
 
-namespace AndrewLrrr\LaravelProjectBuilder\Exceptions;
+namespace AndrewLrrr\LaravelAutomateRelease\Exceptions;
 
 class ReleaseManagerException extends \RuntimeException
 {

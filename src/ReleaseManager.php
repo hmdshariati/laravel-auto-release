@@ -1,9 +1,9 @@
 <?php
 
-namespace AndrewLrrr\LaravelProjectBuilder;
+namespace AndrewLrrr\LaravelAutomateRelease;
 
-use AndrewLrrr\LaravelProjectBuilder\Exceptions\ReleaseManagerException;
-use AndrewLrrr\LaravelProjectBuilder\Utils\Shell;
+use AndrewLrrr\LaravelAutomateRelease\Exceptions\ReleaseManagerException;
+use AndrewLrrr\LaravelAutomateRelease\Utils\Shell;
 use BadMethodCallException;
 use Closure;
 

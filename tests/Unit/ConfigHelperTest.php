@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use AndrewLrrr\LaravelProjectBuilder\Traits\ConfigHelper;
+use AndrewLrrr\LaravelAutomateRelease\Traits\ConfigHelper;
 use Illuminate\Support\Facades\Config;
 
 class ConfigHelperFake

@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use AndrewLrrr\LaravelProjectBuilder\ReleaseManager;
+use AndrewLrrr\LaravelAutomateRelease\ReleaseManager;
 
 class ReleaseManagerTest extends TestCase
 {
@@ -26,8 +26,8 @@ class ReleaseManagerTest extends TestCase
 	 */
 	public function setUp()
 	{
-		$this->shellMock      = \Mockery::mock('\AndrewLrrr\LaravelProjectBuilder\Utils\Shell');
-		$this->vscManagerMock = \Mockery::mock('\AndrewLrrr\LaravelProjectBuilder\VSCManager');
+		$this->shellMock      = \Mockery::mock('\AndrewLrrr\LaravelAutomateRelease\Utils\Shell');
+		$this->vscManagerMock = \Mockery::mock('\AndrewLrrr\LaravelAutomateRelease\VSCManager');
 
 		$this->manager = new ReleaseManager($this->shellMock, $this->vscManagerMock, []);
 	}
@@ -583,7 +583,7 @@ class ReleaseManagerTest extends TestCase
 
 	/**
 	 * @test
-	 * @expectedException \AndrewLrrr\LaravelProjectBuilder\Exceptions\ReleaseManagerException
+	 * @expectedException \AndrewLrrr\LaravelAutomateRelease\Exceptions\ReleaseManagerException
 	 * @expectedExceptionMessage Action can't be empty
 	 */
 	public function throws_exception_if_command_name_is_empty()
@@ -595,7 +595,7 @@ class ReleaseManagerTest extends TestCase
 
 	/**
 	 * @test
-	 * @expectedException \AndrewLrrr\LaravelProjectBuilder\Exceptions\ReleaseManagerException
+	 * @expectedException \AndrewLrrr\LaravelAutomateRelease\Exceptions\ReleaseManagerException
 	 * @expectedExceptionMessage Action 'action' already exists
 	 */
 	public function throws_exception_if_command_already_exists()

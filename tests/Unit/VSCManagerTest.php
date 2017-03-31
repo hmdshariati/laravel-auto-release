@@ -15,7 +15,7 @@ class VSCManagerTest extends TestCase
 	protected $gitMock;
 
 	/**
-	 * @var \AndrewLrrr\LaravelProjectBuilder\VSCManager
+	 * @var \AndrewLrrr\LaravelAutomateRelease\VSCManager
 	 */
 	protected $vscManager;
 
@@ -24,11 +24,11 @@ class VSCManagerTest extends TestCase
 	 */
 	public function setUp()
 	{
-		$this->gitMock = \Mockery::mock('\AndrewLrrr\LaravelProjectBuilder\Utils\Git')
+		$this->gitMock = \Mockery::mock('\AndrewLrrr\LaravelAutomateRelease\Utils\Git')
 			->shouldAllowMockingProtectedMethods()
 			->makePartial();
 
-		$this->vscManager = \Mockery::mock('\AndrewLrrr\LaravelProjectBuilder\VSCManager', [$this->gitMock])
+		$this->vscManager = \Mockery::mock('\AndrewLrrr\LaravelAutomateRelease\VSCManager', [$this->gitMock])
 			->shouldAllowMockingProtectedMethods()
 			->makePartial();
 	}

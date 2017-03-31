@@ -1,9 +1,9 @@
 <?php
 
-namespace AndrewLrrr\LaravelProjectBuilder;
+namespace AndrewLrrr\LaravelAutomateRelease;
 
-use AndrewLrrr\LaravelProjectBuilder\Traits\ConfigHelper;
-use AndrewLrrr\LaravelProjectBuilder\Utils\Git;
+use AndrewLrrr\LaravelAutomateRelease\Traits\ConfigHelper;
+use AndrewLrrr\LaravelAutomateRelease\Utils\Git;
 use Illuminate\Support\Arr;
 
 class VSCManager

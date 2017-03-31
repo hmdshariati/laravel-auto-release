@@ -1,9 +1,9 @@
 <?php
 
-namespace AndrewLrrr\LaravelProjectBuilder\Commands;
+namespace AndrewLrrr\LaravelAutomateRelease\Commands;
 
-use AndrewLrrr\LaravelProjectBuilder\Exceptions\ShellException;
-use AndrewLrrr\LaravelProjectBuilder\ReleaseManager;
+use AndrewLrrr\LaravelAutomateRelease\Exceptions\ShellException;
+use AndrewLrrr\LaravelAutomateRelease\ReleaseManager;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
 

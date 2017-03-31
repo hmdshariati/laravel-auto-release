@@ -1,8 +1,8 @@
-<?php namespace AndrewLrrr\LaravelProjectBuilder;
+<?php namespace AndrewLrrr\LaravelAutomateRelease;
 
-use AndrewLrrr\LaravelProjectBuilder\Commands\BuildCommand;
-use AndrewLrrr\LaravelProjectBuilder\Utils\Git;
-use AndrewLrrr\LaravelProjectBuilder\Utils\Shell;
+use AndrewLrrr\LaravelAutomateRelease\Commands\BuildCommand;
+use AndrewLrrr\LaravelAutomateRelease\Utils\Git;
+use AndrewLrrr\LaravelAutomateRelease\Utils\Shell;
 use Illuminate\Support\Facades\Config;
 use Symfony\Component\Console\Output\BufferedOutput;
 
@@ -73,7 +73,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 			return $releaseManager;
 		});
 
-		$this->app->alias('project.builder', 'AndrewLrrr\LaravelProjectBuilder\ReleaseManager');
+		$this->app->alias('project.builder', 'AndrewLrrr\LaravelAutomateRelease\ReleaseManager');
 
 		$this->app->singleton('command.project.builder', function ($app) {
 			return new BuildCommand($app['project.builder']);
