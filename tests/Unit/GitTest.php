@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use AndrewLrrr\LaravelAutomateRelease\Utils\Git;
+use AndrewLrrr\LaravelAutoRelease\Utils\Git;
 use Tests\Helpers\Traits\TestHelper;
 
 class GitTest extends TestCase
@@ -10,7 +10,7 @@ class GitTest extends TestCase
 	use TestHelper;
 
 	/**
-	 * @var \AndrewLrrr\LaravelAutomateRelease\Utils\Git
+	 * @var \AndrewLrrr\LaravelAutoRelease\Utils\Git
 	 */
 	protected $git;
 
@@ -19,7 +19,7 @@ class GitTest extends TestCase
 	 */
 	public function setUp()
 	{
-		$this->git = \Mockery::mock('\AndrewLrrr\LaravelAutomateRelease\Utils\Git')
+		$this->git = \Mockery::mock('\AndrewLrrr\LaravelAutoRelease\Utils\Git')
 			->shouldAllowMockingProtectedMethods()
 			->makePartial();
 	}
@@ -218,9 +218,9 @@ class GitTest extends TestCase
 	{
 		$expectedCommand = 'git log -10 --pretty=format:"hash=%H#message=%B#author=%an#date=%ad#email=%ae"';
 
-		$buildCommand = $this->getProtectedMethod('\AndrewLrrr\LaravelAutomateRelease\Utils\Git', 'buildCommand');
+		$buildCommand = $this->getProtectedMethod('\AndrewLrrr\LaravelAutoRelease\Utils\Git', 'buildCommand');
 
-		$shellMock = \Mockery::mock('\AndrewLrrr\LaravelAutomateRelease\Utils\Shell');
+		$shellMock = \Mockery::mock('\AndrewLrrr\LaravelAutoRelease\Utils\Shell');
 
 		$actualCommand = $buildCommand->invokeArgs(new Git($shellMock), [10, ['message', 'author', 'date', 'email']]);
 

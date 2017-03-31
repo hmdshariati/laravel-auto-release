@@ -1,9 +1,9 @@
-## Laravel Automate Release
+## Laravel Auto Release
 
 Perhaps you know the situation when after `git pull` project falls with this an error. Cos somebody in your team has added a new dependency to the project and forget to tell you about it.
 Or new project features working incorrectly because you forget to reset queues… There are too many cases for describing.
 
-Laravel Automate Release is a tool that will help you to automatize sequence of routine console commands as:
+Laravel Auto Release is a tool that will help you to automatize sequence of routine console commands as:
 
 ```
 php artisan down
@@ -20,37 +20,37 @@ Instead, you just run:
 php artisan project:release
 ```
 
-And Laravel Automate Release will do all of this boring job for you. It's simple. All you need is Git as version control.
+And Laravel Auto Release will do all of this boring job for you. It's simple. All you need is Git as version control.
 
-Second problem is there are actions like composer update or build frontend that waste a lot of your time. But you need to do them because somebody in your team could update composer dependencies or change styles/js. Every time run this commands is very tedious, so Laravel Automate Release will do it only in case if it necessary.
+Second problem is there are actions like composer update or build frontend that waste a lot of your time. But you need to do them because somebody in your team could update composer dependencies or change styles/js. Every time run this commands is very tedious, so Laravel Auto Release will do it only in case if it necessary.
 
-Laravel Automate Release has integration with Git and can disable or enable some long term commands like `composer update` just watching for files like `composer.json` or `composer.lock`. If this files will be modified Laravel Automate Release will know about it and execute `composer update`. Overwise ... there is no need to force developers to wait :)
+Laravel Auto Release has integration with Git and can disable or enable some long term commands like `composer update` just watching for files like `composer.json` or `composer.lock`. If this files will be modified Laravel Auto Release will know about it and execute `composer update`. Overwise ... there is no need to force developers to wait :)
 
 So let me show you some of this features.
 
 ## Installation
 
 ```
-composer require andrewlrrr/laravel-automate-release
+composer require andrewlrrr/laravel-auto-release
 ```
 
 After updating composer, add the ServiceProvider to the providers array in `config/app.php`:
 
 ```
-AndrewLrrr\LaravelAutomateRelease\ServiceProvider::class
+AndrewLrrr\LaravelAutoRelease\ServiceProvider::class
 ```
 
 And copy the package config to your local config with the publish command:
 
 ```
-php artisan vendor:publish --provider="AndrewLrrr\LaravelAutomateRelease\ServiceProvider"
+php artisan vendor:publish --provider="AndrewLrrr\LaravelAutoRelease\ServiceProvider"
 ```
 
-After installation you need to commit file changes because Laravel Automate Release will start `git clean` and `git reset` commands which resetting all changed and untracked files. You can remove this commands (I will tell about later) but now you should do next:
+After installation you need to commit file changes because Laravel Auto Release will start `git clean` and `git reset` commands which resetting all changed and untracked files. You can remove this commands (I will tell about later) but now you should do next:
 
 ```
 git add .
-git commit -m "Installed Laravel Automate Release"
+git commit -m "Installed Laravel Auto Release"
 ```
 
 ## Usage
@@ -198,7 +198,7 @@ config/release.php
 ],
 ```
 
-In current case Laravel Automate Release will watch for modifications of `webpack.mix.js` file and `resources/assets/js`, `resources/assets/sass` or `resources/assets/fonts` directories.
+In current case Laravel Auto Release will watch for modifications of `webpack.mix.js` file and `resources/assets/js`, `resources/assets/sass` or `resources/assets/fonts` directories.
 
 If you think that some of commands are extra for your case you can just delete them using method `delete` and command alias:
 
