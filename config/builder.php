@@ -11,12 +11,5 @@ return [
 	],
 	'watch' => [
 		'composer_update' => ['composer.json', 'composer.lock'],
-		'npm_install'     => ['package.json', 'npm-shrinkwrap.json'],
-		'laravel_mix'     => [
-			'webpack.mix.js',
-			'resources/assets/js',
-			'resources/assets/sass',
-			'resources/assets/fonts',
-		],
 	],
 ];

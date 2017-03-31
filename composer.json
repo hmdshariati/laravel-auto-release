@@ -1,7 +1,7 @@
 {
-	"name": "andrewlrrr/laravel-auto-deployment",
-	"description": "Helps in automation and deployment project.",
-	"keywords": ["laravel", "artisan", "console", "build", "release", "composer", "npm", "laravel-elixir", "laravel-mix", "git"],
+	"name": "andrewlrrr/laravel-automate-release",
+	"description": "Helps in automation of routine actions for the release of the project.",
+	"keywords": ["laravel", "artisan", "console", "release", "composer", "npm", "laravel-elixir", "laravel-mix", "git"],
 	"license": "MIT",
 	"authors": [
 		{

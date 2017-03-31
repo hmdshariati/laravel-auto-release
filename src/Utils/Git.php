@@ -147,7 +147,7 @@ class Git
 		$result = $this->shell->execCommand($command);
 
 		if ($toArray) {
-			$result = $result->toArray();
+			return $result->toArray();
 		}
 
 		return $result->toString();
