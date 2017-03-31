@@ -37,7 +37,7 @@ class ReleaseManager
 	/**
 	 * @var array
 	 */
-	protected $actions = [];
+	protected $commands = [];
 
 	/**
 	 * @var array
@@ -75,6 +75,8 @@ class ReleaseManager
 	public function __call($name, array $args)
 	{
 		$needExecute = true;
+
+		$args = array_merge([$this->shell], $args);
 
 		if (array_key_exists($name, $this->watch) && ! $this->needExecute($this->watch[$name])) {
 			$needExecute = false;
@@ -138,29 +140,13 @@ class ReleaseManager
 	}
 
 	/**
-	 * @return Shell
-	 */
-	public function shell()
-	{
-		return $this->shell;
-	}
-
-	/**
-	 * @return VSCManager
-	 */
-	public function vsc()
-	{
-		return $this->vscManager;
-	}
-
-	/**
 	 * @param string $name
 	 *
 	 * @return $this
 	 */
 	public function after($name)
 	{
-		if (in_array($name, $this->actions)) {
+		if (in_array($name, $this->commands)) {
 			$this->after = (string) $name;
 		}
 
@@ -174,7 +160,7 @@ class ReleaseManager
 	 */
 	public function before($name)
 	{
-		if (in_array($name, $this->actions)) {
+		if (in_array($name, $this->commands)) {
 			$this->before = (string) $name;
 		}
 
@@ -191,7 +177,7 @@ class ReleaseManager
 		$name    = (string) $name;
 		$message = (string) $message;
 
-		if (in_array($name, $this->actions)) {
+		if (in_array($name, $this->commands)) {
 			throw new ReleaseManagerException("Action '${name}' already exists");
 		}
 
@@ -213,8 +199,8 @@ class ReleaseManager
 	 */
 	public function delete($name)
 	{
-		if (in_array($name, $this->actions)) {
-			unset($this->actions[$name]);
+		if (in_array($name, $this->commands)) {
+			unset($this->commands[$name]);
 			unset($this->methods[$name]);
 			$messageKey = $this->getActionMessageKey($name);
 			if (array_key_exists($messageKey, $this->actionsMessages)) {
@@ -226,9 +212,9 @@ class ReleaseManager
 	/**
 	 * @return array
 	 */
-	public function getActions()
+	public function getCommands()
 	{
-		return array_values($this->actions);
+		return array_values($this->commands);
 	}
 
 	/**
@@ -307,7 +293,7 @@ class ReleaseManager
 	{
 		$getIndex = function () {
 			$counter = 0;
-			foreach ($this->actions as $action) {
+			foreach ($this->commands as $action) {
 				if ($action === $this->after) {
 					break;
 				}
@@ -317,10 +303,10 @@ class ReleaseManager
 		};
 
 		$sliceAndInsert = function ($index) use ($name) {
-			$a = array_slice($this->actions, 0, $index, true);
-			$b = array_slice($this->actions, $index, true);
+			$a = array_slice($this->commands, 0, $index, true);
+			$b = array_slice($this->commands, $index, true);
 
-			$this->actions = $a + [$name => $name] + $b;
+			$this->commands = $a + [$name => $name] + $b;
 		};
 
 		if (! empty($this->after)) {
@@ -328,7 +314,7 @@ class ReleaseManager
 		} elseif (! empty($this->before)) {
 			$sliceAndInsert($getIndex() - 1);
 		} else {
-			$this->actions[$name] = $name;
+			$this->commands[$name] = $name;
 		}
 
 		$this->after  = null;

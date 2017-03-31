@@ -34,40 +34,40 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
 			$releaseManager->setWatch($app['config']['builder.watch']);
 
-			$releaseManager->register('down', function () use ($releaseManager) {
-				return $releaseManager->shell()->execArtisan('down')->toString();
+			$releaseManager->register('down', function ($shell) {
+				return $shell->execArtisan('down')->toString();
 			}, 'Putting the application into maintenance mode...');
 
-			$releaseManager->register('set_last_commit_hash', function () use ($releaseManager) {
-				$releaseManager->vsc()->setLastCommitHash();
+			$releaseManager->register('set_last_commit_hash', function () use ($vscManager) {
+				$vscManager->setLastCommitHash();
 			}, 'Fixing current git commit before pull...');
 
-			$releaseManager->register('git_clean', function () use ($releaseManager) {
-				return $releaseManager->vsc()->clean();
+			$releaseManager->register('git_clean', function () use ($vscManager) {
+				return $vscManager->clean();
 			}, 'Removing untracked files...');
 
-			$releaseManager->register('git_reset', function () use ($releaseManager) {
-				return $releaseManager->vsc()->reset();
+			$releaseManager->register('git_reset', function () use ($vscManager) {
+				return $vscManager->reset();
 			}, 'Resetting git local changes...');
 
-			$releaseManager->register('git_checkout', function () use ($releaseManager) {
-				return $releaseManager->vsc()->checkout();
+			$releaseManager->register('git_checkout', function () use ($vscManager) {
+				return $vscManager->checkout();
 			}, 'Check outing to git master branch...');
 
-			$releaseManager->register('git_pull', function () use ($releaseManager) {
-				return $releaseManager->vsc()->pull();
+			$releaseManager->register('git_pull', function () use ($vscManager) {
+				return $vscManager->pull();
 			}, 'Pulling latest changes...');
 
-			$releaseManager->register('migrations', function () use ($releaseManager) {
-				return $releaseManager->shell()->execArtisan('migrate', ['--force' => true])->toString();
+			$releaseManager->register('migrations', function ($shell) {
+				return $shell->execArtisan('migrate', ['--force' => true])->toString();
 			}, 'Running migrations...');
 
-			$releaseManager->register('composer_update', function () use ($releaseManager) {
-				return $releaseManager->shell()->execCommand('composer update')->toString();
+			$releaseManager->register('composer_update', function ($shell) {
+				return $shell->execCommand('composer update')->toString();
 			}, 'Defining if composer needs to be updated...');
 
-			$releaseManager->register('up', function () use ($releaseManager) {
-				return $releaseManager->shell()->execArtisan('up')->toString();
+			$releaseManager->register('up', function ($shell) {
+				return $shell->execArtisan('up')->toString();
 			}, 'Bringing the application out of maintenance mode!');
 
 			return $releaseManager;

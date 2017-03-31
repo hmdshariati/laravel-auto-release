@@ -1,9 +1,9 @@
-## Laravel Project Builder
+## Laravel Automate Release
 
-Perhaps you know the situation when after git pull project falls with this an error. Cos somebody in your team has added a new dependency to the project and forget to tell you about it.
+Perhaps you know the situation when after `git pull` project falls with this an error. Cos somebody in your team has added a new dependency to the project and forget to tell you about it.
 Or new project features working incorrectly because you forget to reset queues… There are too many cases for describing.
 
-Laravel Project Builder is a tool that will help you to automatize sequence of routine console commands as:
+Laravel Automate Release is a tool that will help you to automatize sequence of routine console commands as:
 
 ```
 php artisan down
@@ -20,16 +20,18 @@ Instead, you just run:
 php artisan project:release
 ```
 
-And Laravel Project Builder will do all of this boring job for you. It's simple.
+And Laravel Automate Release will do all of this boring job for you. It's simple. All you need is Git as version control.
 
-Ok, you can wonder, why I should use this package while I'm able to make my own command contains the sequence of all necessary subcommands. Yes you can, but Laravel Project Builder has integration with Git and it can help you to disable or enable some long term commands like `composer update` just add to commit keyphrases _composer update_ for example. Laravel Project Builder will find this key phrase and execute `composer update` overwise ... there is no need to force developers to wait :)
+Second problem is there are actions like composer update or build frontend that waste a lot of your time. But you need to do them because somebody in your team could update composer dependencies or change styles/js. Every time run this commands is very tedious, so Laravel Automate Release will do it only in case if it necessary.
+
+Laravel Automate Release has integration with Git and can disable or enable some long term commands like `composer update` just watching for files like `composer.json` or `composer.lock`. If this files will be modified Laravel Automate Release will know about it and execute `composer update`. Overwise ... there is no need to force developers to wait :)
 
 So let me show you some of this features.
 
 ## Installation
 
 ```
-composer require andrewlrrr/laravel-project-builder
+composer require andrewlrrr/laravel-automate-release
 ```
 
 After updating composer, add the ServiceProvider to the providers array in `config/app.php`:
@@ -38,20 +40,18 @@ After updating composer, add the ServiceProvider to the providers array in `conf
 AndrewLrrr\LaravelProjectBuilder\ServiceProvider::class
 ```
 
-If you want to redefine command name and description copy the package config to your local config with the publish command:
+And copy the package config to your local config with the publish command:
 
 ```
 php artisan vendor:publish --provider="AndrewLrrr\LaravelProjectBuilder\ServiceProvider"
 ```
-
-In additional to command settings in the config file, you can change `git` settings. One of them `log_depth` needs to be explained. Increase it if you or somebody on your team making a lot of commits (more `log_depth` value) before push them. 
 
 ## Usage
 
 The first step you can just run command:
 
 ```
-php artisan project:build
+php artisan project:release
 ```
 
 **WARNING** before running this command you must commit all your changes overwise all changed and untracked files will be resetting.
@@ -76,16 +76,28 @@ php artisan up
 But you can ease change this behavior and register new commands and remove extra. For this, you should open `AppServiceProvider` or generate a separate service provider and add for example:
 
 ```php
-$releaseManager = app()->make('project.builder');
+$releaseManager = app()->make('project.release');
 
-$releaseManager->register('npm_install', function () {
-    return $this->shell->execCommand('npm install')->toString();
+$releaseManager->register('npm_install', function ($shell) {
+    return $shell->execCommand('npm install')->toString();
 }, 'Installing NPM');
 ```
 
 First parameter here is the command alias, second is callback function to describe command and third is message that will be shown before run the command.
 
-Inside callback function you have access to two objects `shell` and `vscManager`. The first is responsible for commands execution and the second is responsible for the interaction with Git (I'll tell about it a little later).
+Within callback function, you always have access to the `$shell` property which is responsible for commands execution.
+
+Method `execCommand` has two parameters. First is simple shell command like `cd ../`, `pwd` etc. Second is path where command will be executed, for example:
+
+```
+[...]
+return $shell->execCommand('pwd', base_path() . '/storage')->toSting();
+[...]
+```
+
+After `execCommand` we use method `toString` it's necessary if you want to display command output. You can also use method `toArray` for array output but don't try to return it. It can be a reason of an error.
+
+Pretty simple.
 
 So now our list of actions looks like:
 
@@ -108,10 +120,10 @@ npm_install
 It seems `npm_install` must be before `php artisan up`. Ok, it's easy to fix. Make small changes in our code:
 
 ```php
-$releaseManager = app()->make('project.builder');
+$releaseManager = app()->make('project.release');
 
-$releaseManager->before('up')->register('npm_install', function () {
-    return $this->shell->execCommand('npm install')->toString();
+$releaseManager->before('up')->register('npm_install', function ($shell) {
+    return $shell->execCommand('npm install')->toString();
 }, 'Installing NPM');
 ```
 
@@ -119,74 +131,104 @@ Method `before` takes only one argument, the alias of command before which want 
 
 If you want to place command after another you need to use method `after` which is similar to the `before` method.
 
-In order to see all aliases, you can use `getActions` method:
+In order to see all aliases, you can use `getCommands` method:
 
 ```php
-foreach (app()->make('project.builder')->getActions() as $alias) {
-    var_dump($alias);
+foreach (app()->make('project.release')->getCommands() as $command) {
+    var_dump($command);
 }
 ```
 
-If you think that some of this commands are extra for your case you can just delete them using method `delete` and command alias:
+If you don't want to run `npm install` command any time, you can specify in config what files or directories should be changed to fire this command. For example:
 
 ```php
-$releaseManager = app()->make('project.builder');
+config/builder.php
+
+[...]
+'watch' => [
+    [...]
+    'npm_install' => ['package.json', 'npm-shrinkwrap.json'],
+    [...]
+],
+```
+
+In current case `npm_install` is the command name and `['package.json', 'npm-shrinkwrap.json']` are paths to files to monitor. If `package.json` or `npm-shrinkwrap.json` file has been modified, `npm_istall` command will be fired during the release of the project.
+
+Sometime watch for files is not enough. In this case you can specify in config directories for tracking:
+
+```php
+config/builder.php
+
+[...]
+'watch' => [
+    [...]
+    'laravel_mix' => [
+        'resources/assets/js',
+        'resources/assets/sass',
+        'resources/assets/fonts',
+    ],
+    [...]
+],
+```
+
+So, if some file in `resources/assets/js`, `resources/assets/sass` or `resources/assets/fonts` directories will be modified, deleted or added, `laravel_mix` command will be fired.
+
+You can mix files and directories, for example:
+
+```php
+config/builder.php
+
+[...]
+'watch' => [
+    [...]
+    'laravel_mix' => [
+        'webpack.mix.js',
+        'resources/assets/js',
+        'resources/assets/sass',
+        'resources/assets/fonts',
+    ],
+    [...]
+],
+```
+
+In current case Laravel Automate Release will watch for modifications of `webpack.mix.js` file and `resources/assets/js`, `resources/assets/sass` or `resources/assets/fonts` directories.
+
+If you think that some of commands are extra for your case you can just delete them using method `delete` and command alias:
+
+```php
+$releaseManager = app()->make('project.release');
 
 $releaseManager->delete('git_clean');
 $releaseManager->delete('git_reset');
 [...]
 ```
 
-Well, now that you know how to manage commands let's try to add a few and explore the other capabilities of the Laravel Project Builder. So open `AppServiceProvider` or generated service provider and add:
+If you want to run `artisan` command you need to use `execArtisan` method instead `execCommand`. This method has two parameters. First is artisan command signature. Second is artisan command parameters, for example:
 
 ```php
-$releaseManager = app()->make('project.builder');
-
-$releaseManager->before('down')->register('npm_install', function () {
-    $force = (bool) $this->option('npm-install');
-    if ($force || $this->vscManager->findBy('npm install')) {
-        return $this->shell->execCommand('npm install')->toString();
-    }
-}, 'Defining if npm needs to be updated...');
-
-$releaseManager->after('npm_install')->register('laravel_mix', function () {
-    $force = (bool) $this->option('build-frontend');
-    if ($force || $this->vscManager->findBy(['style', 'js', 'script', 'sass'])) {
-        return $this->shell->execCommand('npm run ' . (app()->environment('production') ? 'production' : 'dev'))->toString();
-    }
-}, 'Defining if frontend needs to be built...');
-
-$releaseManager->after('laravel_mix')->register('production_optimize', function () {
-    $message = '';
-
-    if (app()->environment('production')) {
-        $message .= $this->shell->execArtisan('optimize')->toString();
-        $message .= $this->shell->execArtisan('config:cache')->toString();
-        $message .= $this->shell->execArtisan('route:cache')->toString();
-    }
-
-    return $message;
-}, (app()->environment('production') ? 'Optimizing the framework for better perfomance' : ''));
-```
-
-As I said above inside callback function you have access to two objects `shell` and `vscManager` and also access to command options.
-
-In the first line of `npm_install` command callback, you try to get access to command options. In the current case, you use option for force running command regardless of what result will return `vskManager`. In the second line, you try to explore new commits and define should run nmp install or not. If someone from last commits will contain phrase `npm install` `shell` method `execCommand` would be running. This method has two parameters. First is simple shell command like `cd ../`, `pwd` etc. Second is path where command will be executed, for example:
-
-```
-$this->shell->execCommand('pwd', base_path() . '/storage')
-```
-
-After `execCommand` you use method `toString` it's necessary if you want to display command output. You can also use method `toArray` for array output but don't try to return it. It can be a reason of an error.
-
-Pretty simple.
-
-Let's look at the second command `laravel_mix`. In general, it's the similar `npm_install`. But instead string you pass array to `vscManager` `findBy` method. It means that it will be exploring the commits content for words `style` or `js` or `script` or `sass`. If it finds one of them shell command would be running.
-
-In the third command `production_optimize` you use `execArtisan` method instead `execCommand`. This method has two parameters. First is artisan command signature. Second is artisan command parameters, for example:
-
-```
-$this->shell->execArtisan('migrate', ['--force' => true]);
+[...]
+return $shell->execArtisan('migrate', ['--force' => true])->toSting();
+[...]
 ```
 
 You should use `execArtisan` method instead `Artisan` facade method `call` if you want to display command output.
+
+If you want to use command options inside callback function you can use method `options` and redefine command name in config:
+
+```php
+[...]
+'command' => [
+    'signature'   => 'project:release --sitemap',
+[...]
+```
+
+```php
+$releaseManager = app()->make('project.release');
+
+$releaseManager->before('down')->register('sitemap', function ($shell) use ($releaseManager) {
+    $doSitemap = (bool) $releaseManager->option('sitemap');
+    if ($doSitemap) {
+        return $shell->execArtisan('sitemap:generate')->toString();
+    }
+});
+```

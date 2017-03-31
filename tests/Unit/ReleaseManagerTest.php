@@ -45,7 +45,7 @@ class ReleaseManagerTest extends TestCase
 			return null;
 		});
 
-		$this->assertEquals(['action1', 'action2'], $this->manager->getActions());
+		$this->assertEquals(['action1', 'action2'], $this->manager->getCommands());
 	}
 
 	/**
@@ -102,13 +102,13 @@ class ReleaseManagerTest extends TestCase
 			return null;
 		});
 
-		$this->assertEquals(['action1', 'action2', 'action4'], $this->manager->getActions());
+		$this->assertEquals(['action1', 'action2', 'action4'], $this->manager->getCommands());
 
 		$this->manager->after('action2')->register('action3', function () {
 			return 'test3';
 		});
 
-		$this->assertEquals(['action1', 'action2', 'action3', 'action4'], $this->manager->getActions());
+		$this->assertEquals(['action1', 'action2', 'action3', 'action4'], $this->manager->getCommands());
 
 		$this->assertSame('test3', call_user_func([$this->manager, 'action3']));
 
@@ -116,7 +116,7 @@ class ReleaseManagerTest extends TestCase
 			return 'test5';
 		});
 
-		$this->assertEquals(['action1', 'action2', 'action3', 'action4', 'action5'], $this->manager->getActions());
+		$this->assertEquals(['action1', 'action2', 'action3', 'action4', 'action5'], $this->manager->getCommands());
 
 		$this->assertSame('test5', call_user_func([$this->manager, 'action5']));
 	}
@@ -138,13 +138,13 @@ class ReleaseManagerTest extends TestCase
 			return null;
 		});
 
-		$this->assertEquals(['action1', 'action2', 'action4'], $this->manager->getActions());
+		$this->assertEquals(['action1', 'action2', 'action4'], $this->manager->getCommands());
 
 		$this->manager->before('action4')->register('action3', function () {
 			return 'test3';
 		});
 
-		$this->assertEquals(['action1', 'action2', 'action3', 'action4'], $this->manager->getActions());
+		$this->assertEquals(['action1', 'action2', 'action3', 'action4'], $this->manager->getCommands());
 
 		$this->assertSame('test3', call_user_func([$this->manager, 'action3']));
 
@@ -152,7 +152,7 @@ class ReleaseManagerTest extends TestCase
 			return 'test5';
 		});
 
-		$this->assertEquals(['action1', 'action2', 'action3', 'action4', 'action5'], $this->manager->getActions());
+		$this->assertEquals(['action1', 'action2', 'action3', 'action4', 'action5'], $this->manager->getCommands());
 
 		$this->assertSame('test5', call_user_func([$this->manager, 'action5']));
 	}
@@ -170,7 +170,7 @@ class ReleaseManagerTest extends TestCase
 			return 'test2';
 		});
 
-		foreach ($this->manager->getActions() as $key => $action) {
+		foreach ($this->manager->getCommands() as $key => $action) {
 			$this->assertEquals('test' . ($key + 1), $this->manager->$action());
 		}
 	}
@@ -180,22 +180,22 @@ class ReleaseManagerTest extends TestCase
 	 */
 	public function can_register_new_methods_and_invoke_them_with_parameters()
 	{
-		$this->manager->register('action1', function ($one, $two) {
+		$this->manager->register('action1', function ($shell, $one, $two) {
 			return 'param1 - ' . $one  . ' param2 - ' . $two;
 		});
 
-		$this->manager->register('action2', function ($one, $two, $three) {
+		$this->manager->register('action2', function ($shell, $one, $two, $three) {
 			return 'param1 - ' . $one  . ' param2 - ' . $two . ' param3 - ' . $three;
 		});
 
-		$this->assertEquals(['action1', 'action2'], $this->manager->getActions());
+		$this->assertEquals(['action1', 'action2'], $this->manager->getCommands());
 
-		foreach ($this->manager->getActions() as $key => $action) {
+		foreach ($this->manager->getCommands() as $key => $action) {
 			if ($action === 'action1') {
-				$this->assertEquals('param1 - one param2 - two', $this->manager->$action('one', 'two'));
+				$this->assertEquals('param1 - one param2 - two', call_user_func_array([$this->manager, 'action1'], ['one', 'two']));
 			}
 			if ($action === 'action2') {
-				$this->assertEquals('param1 - one param2 - two param3 - surprise', $this->manager->$action('one', 'two', 'surprise'));
+				$this->assertEquals('param1 - one param2 - two param3 - surprise', call_user_func_array([$this->manager, 'action2'], ['one', 'two', 'surprise']));
 			}
 		}
 	}
@@ -217,7 +217,7 @@ class ReleaseManagerTest extends TestCase
 			return 'test3';
 		});
 
-		foreach ($this->manager->getActions() as $key => $action) {
+		foreach ($this->manager->getCommands() as $key => $action) {
 			if ($action !== 'action3') {
 				$this->assertEquals('This is method ' . ($key + 1), $this->manager->getActionMessage($action));
 			} else {
@@ -242,15 +242,15 @@ class ReleaseManagerTest extends TestCase
 			return null;
 		});
 
-		$this->assertEquals(['action1', 'action2'], $this->manager->getActions());
+		$this->assertEquals(['action1', 'action2'], $this->manager->getCommands());
 
 		$this->manager->delete('action1');
 
-		$this->assertEquals(['action2'], $this->manager->getActions());
+		$this->assertEquals(['action2'], $this->manager->getCommands());
 
 		$this->manager->delete('action2');
 
-		$this->assertEquals([], $this->manager->getActions());
+		$this->assertEquals([], $this->manager->getCommands());
 
 		call_user_func([$this->manager, 'action2']);
 	}
@@ -300,12 +300,12 @@ class ReleaseManagerTest extends TestCase
 
 		$manager = new ReleaseManager($this->shellMock, $this->vscManagerMock, []);
 
-		$manager->register('action1', function () use ($manager) {
-			return $manager->shell()->execCommand('ls -l');
+		$manager->register('action1', function ($shell) {
+			return $shell->execCommand('ls -l');
 		});
 
-		$manager->register('action2', function () use ($manager) {
-			return $manager->shell()->execCommand('cat file1');
+		$manager->register('action2', function ($shell) {
+			return $shell->execCommand('cat file1');
 		});
 
 		$this->assertEquals($expected1, call_user_func([$manager, 'action1']));
@@ -583,26 +583,10 @@ class ReleaseManagerTest extends TestCase
 
 	/**
 	 * @test
-	 */
-	public function returns_correct_shell_instance()
-	{
-		$this->assertSame($this->shellMock, $this->manager->shell());
-	}
-
-	/**
-	 * @test
-	 */
-	public function returns_correct_vsc_instance()
-	{
-		$this->assertSame($this->vscManagerMock, $this->manager->vsc());
-	}
-
-	/**
-	 * @test
 	 * @expectedException \AndrewLrrr\LaravelProjectBuilder\Exceptions\ReleaseManagerException
 	 * @expectedExceptionMessage Action can't be empty
 	 */
-	public function throws_exception_if_action_name_is_empty()
+	public function throws_exception_if_command_name_is_empty()
 	{
 		$this->manager->register('', function () {
 			return null;
@@ -614,7 +598,7 @@ class ReleaseManagerTest extends TestCase
 	 * @expectedException \AndrewLrrr\LaravelProjectBuilder\Exceptions\ReleaseManagerException
 	 * @expectedExceptionMessage Action 'action' already exists
 	 */
-	public function throws_exception_if_action_already_exists()
+	public function throws_exception_if_command_already_exists()
 	{
 		$this->manager->register('action', function () {
 			return null;

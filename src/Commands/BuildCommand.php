@@ -36,7 +36,7 @@ class BuildCommand extends Command
 	{
 		$this->releaseManager->setOptions($this->input->getOptions());
 
-		foreach ($this->releaseManager->getActions() as $action) {
+		foreach ($this->releaseManager->getCommands() as $action) {
 			try {
 				$message = $this->releaseManager->getActionMessage($action);
 				$result  = $this->releaseManager->$action();
