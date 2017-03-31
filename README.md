@@ -46,7 +46,7 @@ And copy the package config to your local config with the publish command:
 php artisan vendor:publish --provider="AndrewLrrr\LaravelAutomateRelease\ServiceProvider"
 ```
 
-After installation you need to commit file changes because Laravel Project Builder will start `git clean` and `git reset` commands which resetting all changed and untracked files. You can remove this commands (I will tell about later) but now you should do next:
+After installation you need to commit file changes because Laravel Automate Release will start `git clean` and `git reset` commands which resetting all changed and untracked files. You can remove this commands (I will tell about later) but now you should do next:
 
 ```
 git add .
@@ -149,7 +149,7 @@ foreach (app()->make('project.release')->getCommands() as $command) {
 If you don't want to run `npm install` command any time, you can specify in config what files or directories should be changed to fire this command. For example:
 
 ```php
-config/builder.php
+config/release.php
 
 [...]
 'watch' => [
@@ -164,7 +164,7 @@ In current case `npm_install` is the command name and `['package.json', 'npm-shr
 Sometime watch for files is not enough. In this case you can specify in config directories for tracking:
 
 ```php
-config/builder.php
+config/release.php
 
 [...]
 'watch' => [
@@ -183,7 +183,7 @@ So, if some file in `resources/assets/js`, `resources/assets/sass` or `resources
 You can mix files and directories, for example:
 
 ```php
-config/builder.php
+config/release.php
 
 [...]
 'watch' => [
@@ -225,7 +225,7 @@ If you want to use command options inside callback function you can use method `
 ```php
 [...]
 'command' => [
-    'signature'   => 'project:release --sitemap',
+    'signature' => 'project:release {--sitemap}',
 [...]
 ```
 

@@ -7,7 +7,7 @@ use AndrewLrrr\LaravelAutomateRelease\ReleaseManager;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
 
-class BuildCommand extends Command
+class ReleaseCommand extends Command
 {
 	/**
 	 * @var ReleaseManager
@@ -21,8 +21,8 @@ class BuildCommand extends Command
 	 */
 	public function __construct(ReleaseManager $releaseManager)
 	{
-		$this->signature   = Config::get('builder.command.signature');
-		$this->description = Config::get('builder.command.description');
+		$this->signature   = Config::get('release.command.signature');
+		$this->description = Config::get('release.command.description');
 		parent::__construct();
 		$this->releaseManager = $releaseManager;
 	}

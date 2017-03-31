@@ -71,7 +71,7 @@ class VSCManager
 	public function checkout()
 	{
 		return $this->git->checkout(
-			$this->findConfigOrDefault('builder.vsc.branch', 'master')
+			$this->findConfigOrDefault('release.vsc.branch', 'master')
 		);
 	}
 
@@ -81,8 +81,8 @@ class VSCManager
 	public function pull()
 	{
 		return $this->git->pull(
-			$this->findConfigOrDefault('builder.vsc.branch', 'master'),
-			$this->findConfigOrDefault('builder.vsc.remote', 'origin')
+			$this->findConfigOrDefault('release.vsc.branch', 'master'),
+			$this->findConfigOrDefault('release.vsc.remote', 'origin')
 		);
 	}
 

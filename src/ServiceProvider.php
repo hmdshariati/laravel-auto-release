@@ -1,9 +1,8 @@
 <?php namespace AndrewLrrr\LaravelAutomateRelease;
 
-use AndrewLrrr\LaravelAutomateRelease\Commands\BuildCommand;
+use AndrewLrrr\LaravelAutomateRelease\Commands\ReleaseCommand;
 use AndrewLrrr\LaravelAutomateRelease\Utils\Git;
 use AndrewLrrr\LaravelAutomateRelease\Utils\Shell;
-use Illuminate\Support\Facades\Config;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 class ServiceProvider extends \Illuminate\Support\ServiceProvider
@@ -22,17 +21,17 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 	 */
 	public function register()
 	{
-		$configPath = __DIR__ . '/../config/builder.php';
-		$this->mergeConfigFrom($configPath, 'builder');
+		$configPath = __DIR__ . '/../config/release.php';
+		$this->mergeConfigFrom($configPath, 'release');
 
-		$this->app->singleton('project.builder', function ($app) {
+		$this->app->singleton('project.release', function ($app) {
 			$basePath       = function_exists('base_path') ? base_path() : __DIR__ . '/../';
 			$shell          = new Shell(new BufferedOutput(), $basePath);
 			$git            = new Git($shell);
 			$vscManager     = new VSCManager($git);
 			$releaseManager = new ReleaseManager($shell, $vscManager);
 
-			$releaseManager->setWatch($app['config']['builder.watch']);
+			$releaseManager->setWatch($app['config']['release.watch']);
 
 			$releaseManager->register('down', function ($shell) {
 				return $shell->execArtisan('down')->toString();
@@ -73,13 +72,13 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 			return $releaseManager;
 		});
 
-		$this->app->alias('project.builder', 'AndrewLrrr\LaravelAutomateRelease\ReleaseManager');
+		$this->app->alias('project.release', 'AndrewLrrr\LaravelAutomateRelease\ReleaseManager');
 
-		$this->app->singleton('command.project.builder', function ($app) {
-			return new BuildCommand($app['project.builder']);
+		$this->app->singleton('command.project.release', function ($app) {
+			return new ReleaseCommand($app['project.release']);
 		});
 
-		$this->commands(['command.project.builder']);
+		$this->commands(['command.project.release']);
 	}
 
 	/**
@@ -90,7 +89,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 	public function boot()
 	{
 		$this->publishes([
-			__DIR__.'/../config/builder.php' => config_path('builder.php')
+			__DIR__.'/../config/release.php' => config_path('release.php')
 		], 'config');
 	}
 
@@ -101,6 +100,6 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 	 */
 	public function provides()
 	{
-		return ['project.builder'];
+		return ['project.release'];
 	}
 }
