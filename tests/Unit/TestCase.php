@@ -1,6 +1,6 @@
 <?php
 
-namespace AndrewLrrr\LaravelAutomateRelease\Tests\Unit;
+namespace AndrewLrrr\LaravelAutoRelease\Tests\Unit;
 
 class TestCase extends \PHPUnit_Framework_TestCase
 {

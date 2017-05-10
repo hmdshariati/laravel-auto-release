@@ -1,8 +1,8 @@
-<?php namespace AndrewLrrr\LaravelAutomateRelease;
+<?php namespace AndrewLrrr\LaravelAutoRelease;
 
-use AndrewLrrr\LaravelAutomateRelease\Commands\ReleaseCommand;
-use AndrewLrrr\LaravelAutomateRelease\Utils\Git;
-use AndrewLrrr\LaravelAutomateRelease\Utils\Shell;
+use AndrewLrrr\LaravelAutoRelease\Commands\ReleaseCommand;
+use AndrewLrrr\LaravelAutoRelease\Utils\Git;
+use AndrewLrrr\LaravelAutoRelease\Utils\Shell;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 class ServiceProvider extends \Illuminate\Support\ServiceProvider
@@ -72,7 +72,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 			return $releaseManager;
 		});
 
-		$this->app->alias('project.release', 'AndrewLrrr\LaravelAutomateRelease\ReleaseManager');
+		$this->app->alias('project.release', 'AndrewLrrr\LaravelAutoRelease\ReleaseManager');
 
 		$this->app->singleton('command.project.release', function ($app) {
 			return new ReleaseCommand($app['project.release']);

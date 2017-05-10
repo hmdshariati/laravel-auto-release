@@ -1,6 +1,6 @@
 <?php
 
-namespace AndrewLrrr\LaravelAutomateRelease\Tests\Helpers\Traits;
+namespace AndrewLrrr\LaravelAutoRelease\Tests\Helpers\Traits;
 
 use Illuminate\Support\Collection;
 

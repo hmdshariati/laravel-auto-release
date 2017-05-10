@@ -1,10 +1,10 @@
 <?php
 
-namespace AndrewLrrr\LaravelAutomateRelease\Tests\Unit;
+namespace AndrewLrrr\LaravelAutoRelease\Tests\Unit;
 
-use AndrewLrrr\LaravelAutomateRelease\Utils\Shell;
+use AndrewLrrr\LaravelAutoRelease\Utils\Shell;
 use Illuminate\Support\Facades\Artisan;
-use AndrewLrrr\LaravelAutomateRelease\Tests\Helpers\Traits\TestHelper;
+use AndrewLrrr\LaravelAutoRelease\Tests\Helpers\Traits\TestHelper;
 
 class ShellTest extends TestCase
 {
@@ -16,7 +16,7 @@ class ShellTest extends TestCase
 	protected $bufferMock;
 
 	/**
-	 * @var \AndrewLrrr\LaravelAutomateRelease\Utils\Shell
+	 * @var \AndrewLrrr\LaravelAutoRelease\Utils\Shell
 	 */
 	protected $shell;
 
@@ -164,7 +164,7 @@ class ShellTest extends TestCase
 
 		$shell = $this->shell->execCommand($command);
 
-		$protectedOut = $this->getProtectedProperty('\AndrewLrrr\LaravelAutomateRelease\Utils\Shell', 'out');
+		$protectedOut = $this->getProtectedProperty('\AndrewLrrr\LaravelAutoRelease\Utils\Shell', 'out');
 
 		$protectedOut->setValue($shell, [
 			'file1.txt',
@@ -197,7 +197,7 @@ class ShellTest extends TestCase
 
 	/**
 	 * @test
-	 * @expectedException \AndrewLrrr\LaravelAutomateRelease\Exceptions\ShellException
+	 * @expectedException \AndrewLrrr\LaravelAutoRelease\Exceptions\ShellException
 	 * @expectExceptionMessage 127
 	 */
 	public function throws_error_if_command_is_incorrect()

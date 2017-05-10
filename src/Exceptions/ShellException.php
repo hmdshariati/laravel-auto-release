@@ -1,6 +1,6 @@
 <?php
 
-namespace AndrewLrrr\LaravelAutomateRelease\Exceptions;
+namespace AndrewLrrr\LaravelAutoRelease\Exceptions;
 
 class ShellException extends \RuntimeException
 {

@@ -1,8 +1,8 @@
 <?php
 
-namespace AndrewLrrr\LaravelAutomateRelease\Tests\Unit;
+namespace AndrewLrrr\LaravelAutoRelease\Tests\Unit;
 
-use AndrewLrrr\LaravelAutomateRelease\Traits\ConfigHelper;
+use AndrewLrrr\LaravelAutoRelease\Traits\ConfigHelper;
 use Illuminate\Support\Facades\Config;
 
 class ConfigHelperFake

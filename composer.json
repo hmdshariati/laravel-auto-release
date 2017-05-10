@@ -1,5 +1,5 @@
 {
-	"name": "andrewlrrr/laravel-automate-release",
+	"name": "andrewlrrr/laravel-auto-release",
 	"description": "Helps in automation of routine actions for the release of the project.",
 	"keywords": ["laravel", "artisan", "console", "release", "composer", "npm", "laravel-elixir", "laravel-mix", "git"],
 	"license": "MIT",
@@ -20,12 +20,12 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"AndrewLrrr\\LaravelAutomateRelease\\": "src/"
+			"AndrewLrrr\\LaravelAutoRelease\\": "src/"
 		}
 	},
 	"autoload-dev": {
 		"psr-4": {
-			"AndrewLrrr\\LaravelAutomateRelease\\Tests\\": "tests/"
+			"AndrewLrrr\\LaravelAutoRelease\\Tests\\": "tests/"
 		}
 	}
 }
