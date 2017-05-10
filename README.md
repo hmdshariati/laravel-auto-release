@@ -1,6 +1,6 @@
 ## Laravel Automate Release
 
-Perhaps you know the situation when after `git pull` project falls with this an error. Cos somebody in your team has added a new dependency to the project and forget to tell you about it.
+Perhaps you know the situation when after `git pull` project falls with an error. Cos somebody in your team has added a new dependency to the project and forget to tell you about it.
 Or new project features working incorrectly because you forget to reset queues… There are too many cases for describing.
 
 Laravel Automate Release is a tool that will help you to automatize sequence of routine console commands as:
@@ -20,7 +20,7 @@ Instead, you just run:
 php artisan project:release
 ```
 
-And Laravel Automate Release will do all of this boring job for you. It's simple. All you need is Git as version control.
+And Laravel Automate Release will do all of this boring job for you. It's simple. All you need is Git as a version control.
 
 Second problem is there are actions like composer update or build frontend that waste a lot of your time. But you need to do them because somebody in your team could update composer dependencies or change styles/js. Every time run this commands is very tedious, so Laravel Automate Release will do it only in case if it necessary.
 

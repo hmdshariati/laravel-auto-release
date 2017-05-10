@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\Unit;
+namespace AndrewLrrr\LaravelAutomateRelease\Tests\Unit;
 
 use Illuminate\Support\Facades\Config;
-use Tests\Helpers\Traits\TestHelper;
+use AndrewLrrr\LaravelAutomateRelease\Tests\Helpers\Traits\TestHelper;
 
 class VSCManagerTest extends TestCase
 {

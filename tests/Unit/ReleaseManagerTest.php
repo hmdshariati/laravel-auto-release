@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit;
+namespace AndrewLrrr\LaravelAutomateRelease\Tests\Unit;
 
 use AndrewLrrr\LaravelAutomateRelease\ReleaseManager;
 

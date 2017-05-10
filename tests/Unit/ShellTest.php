@@ -1,10 +1,10 @@
 <?php
 
-namespace Tests\Unit;
+namespace AndrewLrrr\LaravelAutomateRelease\Tests\Unit;
 
 use AndrewLrrr\LaravelAutomateRelease\Utils\Shell;
 use Illuminate\Support\Facades\Artisan;
-use Tests\Helpers\Traits\TestHelper;
+use AndrewLrrr\LaravelAutomateRelease\Tests\Helpers\Traits\TestHelper;
 
 class ShellTest extends TestCase
 {

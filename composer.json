@@ -25,7 +25,7 @@
 	},
 	"autoload-dev": {
 		"psr-4": {
-			"Tests\\": "tests/"
+			"AndrewLrrr\\LaravelAutomateRelease\\Tests\\": "tests/"
 		}
 	}
 }
