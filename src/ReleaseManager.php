@@ -94,6 +94,14 @@ class ReleaseManager
 	}
 
 	/**
+	 * @return VSCManager
+	 */
+	public function getVscManager()
+	{
+		return $this->vscManager;
+	}
+
+	/**
 	 * @return array
 	 */
 	public function getWatch()

@@ -69,8 +69,8 @@ This will run the sequence of actions:
 php artisan down
 git clean -f
 git reset
-git checkout master
-git pull origin master
+git checkout [currecnt_branch_here]
+git pull [your_remote_repo] [currecnt_branch_here]
 php artisan migrate
 
 [if necessary]
@@ -112,7 +112,7 @@ So now our list of actions looks like:
 php artisan down
 git clean -f
 git reset
-git checkout master
+git checkout [currecnt_branch_here]
 git pull origin master
 php artisan migrate
 
@@ -232,10 +232,24 @@ If you want to use command options inside callback function you can use method `
 ```php
 $releaseManager = app()->make('project.release');
 
-$releaseManager->before('down')->register('sitemap', function ($shell) use ($releaseManager) {
+$releaseManager->before('up')->register('sitemap', function ($shell) use ($releaseManager) {
     $doSitemap = (bool) $releaseManager->option('sitemap');
     if ($doSitemap) {
         return $shell->execArtisan('sitemap:generate')->toString();
     }
 });
+```
+
+By default Laravel Auto Release trying to detect current branch on its own. It's useful behavior if you often checkout between different branches. But if you want to fix concrete branch (for production as example) you need to specify this branch into the config file and add to service provider similar code:
+
+```php
+$releaseManager = app()->make('project.release');
+
+$releaseManager->delete('set_current_branch');
+$releaseManager->after('down')->register('set_current_branch', function () use ($releaseManager) {
+    if (App::environment() !== 'production') {
+        $releaseManager->getVscManager()->setCurrentBranch();
+    }
+});
+[...]
 ```

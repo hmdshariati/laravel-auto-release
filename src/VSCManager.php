@@ -27,6 +27,11 @@ class VSCManager
 	protected $lastCommitHash = null;
 
 	/**
+	 * @var string|null
+	 */
+	protected $currentBranch = null;
+
+	/**
 	 * @var null|array
 	 */
 	protected $files;
@@ -50,11 +55,35 @@ class VSCManager
 	}
 
 	/**
+	 * @return void
+	 */
+	public function setDefaultBranch()
+	{
+		$this->currentBranch = $this->findConfigOrDefault('release.vsc.branch', 'master');
+	}
+
+	/**
+	 * @return void
+	 */
+	public function setCurrentBranch()
+	{
+		$this->currentBranch = $this->git->branch();
+	}
+
+	/**
 	 * @return string
 	 */
 	public function getLastCommitHash()
 	{
 		return $this->lastCommitHash;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getCurrentBranch()
+	{
+		return $this->currentBranch;
 	}
 
 	/**
@@ -70,9 +99,11 @@ class VSCManager
 	 */
 	public function checkout()
 	{
-		return $this->git->checkout(
-			$this->findConfigOrDefault('release.vsc.branch', 'master')
-		);
+		if (is_null($this->currentBranch)) {
+			$this->setDefaultBranch();
+		}
+
+		return $this->git->checkout($this->currentBranch);
 	}
 
 	/**
@@ -80,8 +111,12 @@ class VSCManager
 	 */
 	public function pull()
 	{
+		if (is_null($this->currentBranch)) {
+			$this->setDefaultBranch();
+		}
+
 		return $this->git->pull(
-			$this->findConfigOrDefault('release.vsc.branch', 'master'),
+			$this->currentBranch,
 			$this->findConfigOrDefault('release.vsc.remote', 'origin')
 		);
 	}

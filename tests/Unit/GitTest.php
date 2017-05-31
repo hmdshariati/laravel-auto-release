@@ -74,6 +74,23 @@ class GitTest extends TestCase
 	/**
 	 * @test
 	 */
+	public function can_make_correct_invoke_current_branch()
+	{
+		$expectedCommand = 'git rev-parse --abbrev-ref HEAD';
+		$actualCommand = '';
+
+		$this->git->shouldReceive('execShell')->once()->andReturnUsing(function ($command) use (&$actualCommand) {
+			$actualCommand = $command;
+		});
+
+		$this->git->branch();
+
+		$this->assertSame($expectedCommand, $actualCommand);
+	}
+
+	/**
+	 * @test
+	 */
 	public function can_make_correct_pull_to_custom_remote_and_branch()
 	{
 		$expectedCommand = 'git pull custom_remote custom_branch';

@@ -26,10 +26,9 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
 		$this->app->singleton('project.release', function ($app) {
 			$basePath       = function_exists('base_path') ? base_path() : __DIR__ . '/../';
-			$shell          = new Shell(new BufferedOutput(), $basePath);
-			$git            = new Git($shell);
+			$git            = new Git(new Shell(new BufferedOutput(), $basePath));
 			$vscManager     = new VSCManager($git);
-			$releaseManager = new ReleaseManager($shell, $vscManager);
+			$releaseManager = new ReleaseManager(new Shell(new BufferedOutput(), $basePath), $vscManager);
 
 			$releaseManager->setWatch($app['config']['release.watch']);
 
@@ -41,6 +40,10 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 				$vscManager->setLastCommitHash();
 			}, 'Fixing current git commit before pull...');
 
+			$releaseManager->register('set_current_branch', function () use ($vscManager) {
+				$vscManager->setCurrentBranch();
+			}, 'Fixing current branch before pull...');
+
 			$releaseManager->register('git_clean', function () use ($vscManager) {
 				return $vscManager->clean();
 			}, 'Removing untracked files...');
@@ -51,7 +54,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
 			$releaseManager->register('git_checkout', function () use ($vscManager) {
 				return $vscManager->checkout();
-			}, 'Check outing to git master branch...');
+			}, 'Check outing to branch...');
 
 			$releaseManager->register('git_pull', function () use ($vscManager) {
 				return $vscManager->pull();

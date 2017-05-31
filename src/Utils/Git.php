@@ -68,6 +68,14 @@ class Git
 	/**
 	 * @return string
 	 */
+	public function branch()
+	{
+		return $this->execShell('git rev-parse --abbrev-ref HEAD');
+	}
+
+	/**
+	 * @return string
+	 */
 	public function clean()
 	{
 		return $this->execShell('git clean -f');

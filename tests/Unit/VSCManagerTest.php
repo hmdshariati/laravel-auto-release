@@ -2,6 +2,7 @@
 
 namespace AndrewLrrr\LaravelAutoRelease\Tests\Unit;
 
+use AndrewLrrr\LaravelAutoRelease\VSCManager;
 use Illuminate\Support\Facades\Config;
 use AndrewLrrr\LaravelAutoRelease\Tests\Helpers\Traits\TestHelper;
 
@@ -52,10 +53,11 @@ class VSCManagerTest extends TestCase
 	/**
 	 * @test
 	 */
-	public function can_checkout_to_set_branch()
+	public function can_set_current_branch_and_checkout_to_it()
 	{
-		Config::shouldReceive('has')->once()->andReturn(true);
-		Config::shouldReceive('get')->once()->andReturn('tested_branch');
+		$this->gitMock->shouldReceive('branch')->once()->andReturn('tested_branch');
+
+		$this->vscManager->setCurrentBranch();
 
 		$this->gitMock->shouldReceive('checkout')->once()->andReturnUsing(function ($branch) {
 			return 'Checkout to branch ' . $branch;
@@ -67,9 +69,12 @@ class VSCManagerTest extends TestCase
 	/**
 	 * @test
 	 */
-	public function can_checkout_to_default_branch()
+	public function can_set_default_branch_and_checkout_to_it()
 	{
-		Config::shouldReceive('has')->once()->andReturn(false);
+		Config::shouldReceive('has')->once()->andReturn(true);
+		Config::shouldReceive('get')->once()->andReturn('master');
+
+		$this->vscManager->setDefaultBranch();
 
 		$this->gitMock->shouldReceive('checkout')->once()->andReturnUsing(function ($branch) {
 			return 'Checkout to branch ' . $branch;
@@ -81,10 +86,26 @@ class VSCManagerTest extends TestCase
 	/**
 	 * @test
 	 */
-	public function can_pull_from_set_remote_and_branch()
+	public function can_checkout_to_default_branch()
 	{
 		Config::shouldReceive('has')->once()->andReturn(true);
-		Config::shouldReceive('get')->once()->andReturn('tested_branch');
+		Config::shouldReceive('get')->once()->andReturn('master');
+
+		$this->gitMock->shouldReceive('checkout')->once()->andReturnUsing(function ($branch) {
+			return 'Checkout to branch ' . $branch;
+		});
+
+		$this->assertSame('Checkout to branch master', $this->vscManager->checkout(true));
+	}
+
+	/**
+	 * @test
+	 */
+	public function can_pull_from_set_remote_and_branch()
+	{
+		$currentBranch = $this->getProtectedProperty(VSCManager::class, 'currentBranch');
+		$currentBranch->setValue($this->vscManager, 'tested_branch');
+
 		Config::shouldReceive('has')->once()->andReturn(true);
 		Config::shouldReceive('get')->once()->andReturn('tested_remote');
 
